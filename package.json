@@ -1,0 +1,24 @@
+{
+  "name": "MathW82SwimProject",
+  "version": "1.0.0",
+  "description": "MathW82 main project repository.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bmg23/MathW82SwimProject.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bmg23/MathW82SwimProject/issues"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "homepage": "https://github.com/bmg23/MathW82SwimProject#readme"
+}
