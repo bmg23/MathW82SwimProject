@@ -15,5 +15,5 @@ function myFunction() {
           openDropdown.classList.remove('show');
         }
       }
-    }
-  }
+   }
+}

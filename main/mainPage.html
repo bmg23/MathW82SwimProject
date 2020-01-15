@@ -6,14 +6,23 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Swim Time Progression</title>
 
-    <script type = "text/javascript" src = `https://d3js.org/d3.v5.min.js"></script> 
+
+    <link rel="stylesheet" type="text/css" href="mainPage.css">
+    <script src="mainPage.js"></script>
 
 </head>
 
     <body>
         <h1>Swim Time Progression</h1>
-        <p>Hello!</p>
-
+        
+        
+        <!---Graph Input Options-->
+        <p>Gender</p>
+        <input type="radio" name="gender" value="male"> Male </input>
+        <input type="radio" name="gender" value="female"> Female </input>
+        <input type="radio" name="gender" value="female"> Both </input>
+        
+        <p>Event</p>
         <div class="dropdown">
             <button onclick="myFunction()" class="dropbtn">Dropdown</button>
             <div id="myDropdown" class="dropdown-content">
@@ -22,7 +31,23 @@
               <a href="#">Link 3</a>
             </div>
         </div>
+        
+        <p>Event Test</p>
+        <select>
+            <option value="50">50 Free</option>
+            <option value="100">100 Free</option>
+        </select>
+        
 
 
+        <p>Age Group</p>
+        <div class="dropdown">
+            <button onclick="myFunction()" class="dropbtn">Dropdown</button>
+            <div id="myDropdown" class="dropdown-content">
+              <a href="#">Link 1</a>
+              <a href="#">Link 2</a>
+              <a href="#">Link 3</a>
+            </div>
+        </div>
     </body>
 </html>
