@@ -14,3 +14,23 @@ for (const event in events) {
   eventSelect.add(newEventOption); 
 }
 
+/* STACKOVERFLOW CODE 
+var allText =[];
+var allTextLines = [];
+var Lines = [];
+
+var txtFile = new XMLHttpRequest();
+txtFile.open("GET", "../Data/AllWorldRecordsProgression.txt", true);
+txtFile.onreadystatechange = function()
+{
+    allText = txtFile.responseText;
+    allTextLines = allText.split(/\r\n|\n/);
+};
+
+require(['fs']);
+fs = require('fs'); 
+fs.readFile( "../Data/AllWorldRecordsProgression.txt", (err, data) => {
+    if(err) throw err;
+    console.log(data.toString()); 
+})
+*/ 
