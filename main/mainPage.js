@@ -74,7 +74,16 @@ eventCSV = ["Men's 50 FR LCM", "Women's 50 FR LCM", "Men's 100 FR LCM",
             "Mixed 400 FR-R LCM", "Men's 800 FR-R LCM", "Women's 800 FR-R LCM", 
             "Men's 400 MED-R LCM", "Women's 400 MED-R LCM", "Mixed 400 MED-R LCM"]  
 
-
+countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France",
+  "AUS":"Australia", "RUS":"Russia", "RSA":"South Africa", "SUI":"Switzerland",
+  "GER":"Germany", "SWE":"Sweden", "NED":"Netherlands", "CHN":"China",
+  "BUL":"Romania", "GDR":"Germany", "ITA":"Italy", "FRG":"Germany",
+  "POL":"Poland", "URS":"Russia", "CAN":"Canada", "GBR":"United Kingdom",
+  "MEX":"Mexico", "JPN":"Japan", "ESP":"Spain", "ZIM":"Zimbabwe",
+  "HUN":"Hungary", "UKR":"Ukraine", "LTU":"Lithuania", "BEL":"Belgium",
+  "DEN":"Denmark", "SRB":"Serbia", "ARG":"Argentina", "FIN":"Finland", "CRO":"Croatia",
+  "CRC":"Costa Rica", "NZL":"New Zealand", "AUT":"Austria", "JAM":"Jamaica",
+  "CZE":"The Czech Republic", "SLO":"Slovenia", "SVK":"Slovakia", "TRI":"Trinidad and Tobago"}
 
 LCM_World_Records = []; 
 SCM_World_Records = []; 
@@ -112,8 +121,12 @@ function includes(data, array) {
   return false; 
 }
 
-function converCountry(str) {
-  return str; 
+function converCountry(countryName) {
+  if(countries[countryName] != "") {
+    return countries[countryName]; 
+  } else {
+    return countryName; 
+  }
 }
 
 /*timeToMS 
@@ -212,7 +225,7 @@ function fillArray(data) {
     if(isRecord(data[line])) {
       //Clean up object
       let record = cleanUp(data[line]); 
-      console.log(record); 
+      
       //Add object to array
       LCM_World_Records.push(record)
     } 
@@ -222,3 +235,34 @@ function fillArray(data) {
 
 //Fill LCM_World_Records
 d3.csv("AllWorldRecords.csv").then( fillArray ); 
+
+
+console.log(LCM_World_Records); 
+
+
+
+/*GRAPH TIME*/ 
+let outerWidth = 1000
+let outerHeight = 1000
+let margins = { top: 30, bottom: 50, left: 50, right: 30 }
+let innerWidth = outerWidth - margins.left - margins.right
+let innerHeight = outerHeight - margins.top - margins.bottom
+
+let scatterOuter = d3
+  .select('svg#graph')
+  .attr('width', outerWidth)
+  .attr('height', outerHeight)
+
+d3.selectAll('svg')
+  .data(LCM_World_Records)
+  .enter()
+  .append('circle')
+  .attr('cx', 100)
+  .attr('cy', 100)
+  .style('fill', 'transparent')
+  .style('stroke-width', 5)
+  .transition()
+  .duration(2000)
+  .attr('r', 5)
+  .style('stroke', 5)
+  .style('opacity', 0.6)
