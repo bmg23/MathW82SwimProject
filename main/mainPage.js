@@ -107,27 +107,13 @@ function isRecord(record) {
   let dateRegex =  new RegExp('^\d{2}[\/]\d{2}[\/]\d{4}'); 
 
   //Check time
-  if(!timeRegexLong.exec(record['Time'])) {
+  if(timeRegexLong.exec(record['Time']) || timeRegexShort.exec(record['Time'])) {
     //console.log(record);
-    return false; 
-  } 
-  if(!timeRegexShort.exec(record['Time'])) {
-    //console.log(record);
-    return false;
-  }
-  //Check Date
-  if (!dateRegex.exec(record['Date'])) {
-    //console.log(record);
-    return false; 
-  }
-  //Check Athlete
-  if(record['Athlete'] = '') {
-    //console.log(record);
-    return false; 
-  }  
-  else {
     return true; 
+  } else {
+    return false; 
   }
+ 
 }
 
 //Checks array for data 
@@ -254,7 +240,7 @@ function fillArray(data) {
 
 
 //Fill LCM_World_Records
-d3.csv("AllWorldRecordsCopy.csv").then( fillArray ); 
+d3.csv("AllWorldRecords.csv").then( fillArray ); 
 
 
 console.log(LCM_World_Records); 
