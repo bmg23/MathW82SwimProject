@@ -104,16 +104,15 @@ function isRecord(record) {
   let timeRegexLong = new RegExp('^[0-9]+:+[0-9]+.+[0-9]');
   let timeRegexShort = new RegExp('^[0-9]+.+[0-9]');
 
-  let dateRegex =  new RegExp('^\d{2}[\/]\d{2}[\/]\d{4}'); 
-
-  //Check time
-  if(timeRegexLong.exec(record['Time']) || timeRegexShort.exec(record['Time'])) {
-    //console.log(record);
-    return true; 
-  } else {
+  if(!timeRegexShort.exec(record['Time']) && !timeRegexLong.exec(record['Time'])) {
+    return false;
+  } 
+  if(record['Date'] == "") {
     return false; 
   }
- 
+  else {
+    return true; 
+  }
 }
 
 //Checks array for data 
@@ -173,7 +172,7 @@ function timeToMS(timeStr) {
     time = seconds + milliseconds; 
 
   } else {
-    console.log("Error in time!"); 
+   console.log("Error in time!"); 
   }
   
   return time; 
@@ -201,8 +200,18 @@ function cleanUp(record) {
   return record;
 }
 
+/*fillArray*/ 
+function fillArray(record, array) {
+  cleanUp(record); 
+  array.push(record); 
+}
 
-/*fillArray
+/*checkNextLine*/ 
+function checkNextLine(line) {
+  console.log(line); 
+}
+
+/*readData
  * Input: CSV Data for USA Swimming
  * 
  * Reads in event name and then adds to 
@@ -211,7 +220,7 @@ function cleanUp(record) {
  * 
  * Adds record to array
  */
-function fillArray(data) {
+function readData(data, array) {
   
   var event = eventCSV[0]; 
  
@@ -229,21 +238,38 @@ function fillArray(data) {
     data[line].Event = event;
 
     if(isRecord(data[line])) {
-      //Clean up object
-      let record = cleanUp(data[line]); 
-      
-      //Add object to array
-      LCM_World_Records.push(record)
-    } 
+      fillArray(data[line], array); 
+    } else {
+      checkNextLine(data[line])
+    }
   }
 }
 
 
+ 
+/*Main Function
+ * 
+ * Reads CSV Data into arrays
+ * Call Graph and darws an initial graph
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+function main(data) {
+  readData(data, LCM_World_Records); 
+}
+
+
+
+
+
 //Fill LCM_World_Records
-d3.csv("AllWorldRecords.csv").then( fillArray ); 
+d3.csv("AllWorldRecordsCopy.csv").then( main ); 
 
 
-console.log(LCM_World_Records); 
+//console.log(LCM_World_Records); 
 
 
 
@@ -272,3 +298,6 @@ d3.selectAll('svg')
   .attr('r', 5)
   .style('stroke', 5)
   .style('opacity', 0.6)
+
+
+
