@@ -103,10 +103,30 @@ SCM_World_Records = [];
 function isRecord(record) {
   let timeRegexLong = new RegExp('^[0-9]+:+[0-9]+.+[0-9]');
   let timeRegexShort = new RegExp('^[0-9]+.+[0-9]');
-  if(timeRegexLong.exec(record['Time']) || timeRegexShort.exec(record['Time'])) {
-    return true; 
-  } else {
+
+  let dateRegex =  new RegExp('^\d{2}[\/]\d{2}[\/]\d{4}'); 
+
+  //Check time
+  if(!timeRegexLong.exec(record['Time'])) {
+    //console.log(record);
     return false; 
+  } 
+  if(!timeRegexShort.exec(record['Time'])) {
+    //console.log(record);
+    return false;
+  }
+  //Check Date
+  if (!dateRegex.exec(record['Date'])) {
+    //console.log(record);
+    return false; 
+  }
+  //Check Athlete
+  if(record['Athlete'] = '') {
+    //console.log(record);
+    return false; 
+  }  
+  else {
+    return true; 
   }
 }
 
@@ -234,7 +254,7 @@ function fillArray(data) {
 
 
 //Fill LCM_World_Records
-d3.csv("AllWorldRecords.csv").then( fillArray ); 
+d3.csv("AllWorldRecordsCopy.csv").then( fillArray ); 
 
 
 console.log(LCM_World_Records); 
