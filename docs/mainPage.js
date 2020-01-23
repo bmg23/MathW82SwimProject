@@ -78,7 +78,7 @@ let countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France
 
 /******************************Script for graphing*************************************/
 
-LCM_World_Records = []; 
+let LCM_World_Records = []; 
 
 /*isRecord 
  * Input: Record Object
@@ -186,7 +186,7 @@ function cleanUp(record) {
   record['Country'] = converCountry(record['Country']); 
   record['Date'] = new Date(record['Date']);
   record['Rank'] = Number(record['Rank']); 
-  record['Total Time'] = timeToMS(record['Time']); 
+  record['TotalTime'] = timeToMS(record['Time']); 
   
   return record;
 }
@@ -256,13 +256,20 @@ function graph() {
   let swimTimes = LCM_World_Records.map(d => d.TotalTime);
 
 
+  
+
   let swim50FreeMens = filterArray(LCM_World_Records, "Event", "Men's 50 FR LCM"); 
-  swimDates = swim50FreeMens.map(d => d.Date); 
+
+
+  let swim50FrMensDates = swim50FreeMens.map(d => d.Date); 
+  
+
   let swim50FreeMensTimes = swim50FreeMens.map(d => d.TotalTime); 
+  console.log(swim50FreeMensTimes);
 
   /*GRAPH TIME*/ 
-  let outerWidth = 1000
-  let outerHeight = 600
+  let outerWidth = 500
+  let outerHeight = 500
   //let margins = { top: 30, bottom: 50, left: 50, right: 30 }
   //let innerWidth = outerWidth - margins.left - margins.right
   //let innerHeight = outerHeight - margins.top - margins.bottom
@@ -271,18 +278,19 @@ function graph() {
     .attr('width', outerWidth)
     .attr('height', outerHeight)
     .style('background-color', 'skyblue')
+    .attr('align', 'center');
 
 
 
   let dateXScale = 
     d3.scaleLinear()
-      .domain(d3.extent(swimDates))
-      .range([0, 1000])
+      .domain(d3.extent(swim50FrMensDates))
+      .range([outerWidth, 0])
 
   let timeYScale = 
     d3.scaleLinear()
       .domain(d3.extent(swim50FreeMensTimes))
-      .range([0, 600])
+      .range([0, outerHeight])
 
 
   d3.select('svg#graph')
@@ -292,7 +300,7 @@ function graph() {
     .append('circle')
     .attr('cx', d => dateXScale(d.Date))
     .attr('cy', d => timeYScale(d.TotalTime))
-    .attr('r', 2)
+    .attr('r', 4)
     .style('fill', 'red')
     .style('stroke-width', 5)
     .style('opacity', 0.6);
