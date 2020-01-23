@@ -10,10 +10,12 @@
 /******************************Script for editing page*******************************/
 
 //Event List
-events = ["400 Free-R Mixed", "400 Medley-R Mixed", "50 Free", "100 Free", "200 Free",
-          "400 Free", "800 Free", "1500 Free","50 Back", "100 Back", "200 Back", "50 Breast",
-          "100 Breast", "200 Breast", "50 Fly", "100 Fly", "200 Fly", "200 IM", "400 IM",
-          "400 Free Relay",  "800 Free Relay", "400 Medley Relay"]; 
+events = ["50 FR", "100 FR", "200 FR", "400 FR", 
+          "800 FR", "1500 FR", "50 BK", "100 BK", 
+          "200 BK", "50 BR", "100 BR", "200 BR", 
+          "50 FL", "100 FL", "200 FL", "200 IM", 
+          "400 IM", "400 FR-R", "Mixed 400 FR-R", 
+          "800 FR-R", "400 MED-R", "Mixed 400 MED-R"]; 
 
 
 
@@ -22,6 +24,7 @@ var eventSelect = document.getElementById('events');
 for (const event in events) {
   var newEventOption = document.createElement("option");
   newEventOption.text = `${events[event]}`;
+  newEventOption.value = `${events[event]}`;
   eventSelect.add(newEventOption); 
 }
 
@@ -36,7 +39,7 @@ for (i = oldestRecord; i <= currentYear; ++i) {
   dates.unshift(i); 
 }
 
-dates.unshift("All"); 
+dates.unshift("All Years"); 
 
 var dateSelect = document.getElementById('date');
 
@@ -78,7 +81,8 @@ let countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France
 
 /******************************Script for graphing*************************************/
 
-LCM_World_Records = []; 
+//Global graphing variables 
+let LCM_World_Records = []; 
 
 /*isRecord 
  * Input: Record Object
@@ -186,7 +190,7 @@ function cleanUp(record) {
   record['Country'] = converCountry(record['Country']); 
   record['Date'] = new Date(record['Date']);
   record['Rank'] = Number(record['Rank']); 
-  record['Total Time'] = timeToMS(record['Time']); 
+  record['TotalTime'] = timeToMS(record['Time']); 
   
   return record;
 }
@@ -249,39 +253,19 @@ function filterArray(array, objectFilter, filterValue) {
  * graph to the svg 
  * in html.  
  */
-function graph() {
-  console.log("Time to graph"); 
+function drawGraph(dataArray) {
 
-  let swimDates = LCM_World_Records.map(d => d.Date);
-  let swimTimes = LCM_World_Records.map(d => d.TotalTime);
-
-
-  let swim50FreeMens = filterArray(LCM_World_Records, "Event", "Men's 50 FR LCM"); 
-  swimDates = swim50FreeMens.map(d => d.Date); 
-  let swim50FreeMensTimes = swim50FreeMens.map(d => d.TotalTime); 
-
-  /*GRAPH TIME*/ 
-  let outerWidth = 1000
-  let outerHeight = 600
-  //let margins = { top: 30, bottom: 50, left: 50, right: 30 }
-  //let innerWidth = outerWidth - margins.left - margins.right
-  //let innerHeight = outerHeight - margins.top - margins.bottom
-
-  d3.select('svg#graph')
-    .attr('width', outerWidth)
-    .attr('height', outerHeight)
-    .style('background-color', 'skyblue')
-
-
+  let dates = dataArray.map(d => d.Date);
+  let times = dataArray.map(d => d.TotalTime);
 
   let dateXScale = 
     d3.scaleLinear()
-      .domain(d3.extent(swimDates))
+      .domain(d3.extent(dates))
       .range([0, 1000])
 
   let timeYScale = 
     d3.scaleLinear()
-      .domain(d3.extent(swim50FreeMensTimes))
+      .domain(d3.extent(times))
       .range([0, 600])
 
 
@@ -302,6 +286,46 @@ function graph() {
 
 }
 
+//Global user input variables 
+var selectedGender = 'Both'; 
+let genderInput = document.getElementsByName('gender'); 
+var eventInput = ['50 Free']; 
+var dateInput = 'All Years';
+var distanceInput = 'SYC'; 
+
+/*getUserInput()
+ *
+ * Input: User input from index.html
+ *
+ * Sets global user input variables 
+ * 
+ */
+function getUserInput() {
+  //Get gender
+  genderInput = document.getElementsByName('gender'); 
+  console.log(genderInput); 
+  for(var i = 0; i < genderInput.length; i++) {
+    if(genderInput[i].checked)
+        selectedGender = genderInput[i].value;
+  }
+  
+  
+  eventInput = document.getElementById("events").value; 
+  dateInput = document.getElementById("date").value;
+  distanceInput = document.getElementById("distance").value;  
+}
+
+
+function graph() {
+  getUserInput(); 
+  console.log('Graphing...'); 
+  console.log(distanceInput); 
+
+
+
+}
+
+
 
 
  
@@ -317,15 +341,15 @@ function graph() {
  */
 function main(data) {
   readData(data, LCM_World_Records); 
-  graph(); 
+  drawGraph(); 
 }
-
-
-
-
 
 //Fill LCM_World_Records
 d3.csv("AllWorldRecords.csv").then( main ); 
+
+
+
+
 
 
 console.log(LCM_World_Records); 
