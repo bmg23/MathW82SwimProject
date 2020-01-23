@@ -7,14 +7,7 @@
  * an interactive graph of historical swimming records. 
  */
 
-
-
-
-/* Fill in selection boxes with data 
- *
- *
- * 
- */
+/******************************Script for editing page*******************************/
 
 //Event List
 events = ["400 Free-R Mixed", "400 Medley-R Mixed", "50 Free", "100 Free", "200 Free",
@@ -54,12 +47,9 @@ for (const date in dates) {
 }
 
 
+/******************************Data needed for creating records*******************************/
 
-/*
-Event format
-*/
-
-eventCSV = ["Men's 50 FR LCM", "Women's 50 FR LCM", "Men's 100 FR LCM", 
+let eventCSV = ["Men's 50 FR LCM", "Women's 50 FR LCM", "Men's 100 FR LCM", 
             "Women's 100 FR LCM", "Men's 200 FR LCM", "Women's 200 FR LCM", 
             "Men's 400 FR LCM", "Women's 400 FR LCM", "Men's 800 FR LCM", 
             "Women's 800 FR LCM", "Men's 1500 FR LCM", "Women's 1500 FR LCM", 
@@ -74,7 +64,7 @@ eventCSV = ["Men's 50 FR LCM", "Women's 50 FR LCM", "Men's 100 FR LCM",
             "Mixed 400 FR-R LCM", "Men's 800 FR-R LCM", "Women's 800 FR-R LCM", 
             "Men's 400 MED-R LCM", "Women's 400 MED-R LCM", "Mixed 400 MED-R LCM"]  
 
-countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France",
+let countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France",
   "AUS":"Australia", "RUS":"Russia", "RSA":"South Africa", "SUI":"Switzerland",
   "GER":"Germany", "SWE":"Sweden", "NED":"Netherlands", "CHN":"China",
   "BUL":"Romania", "GDR":"Germany", "ITA":"Italy", "FRG":"Germany",
@@ -85,10 +75,10 @@ countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France",
   "CRC":"Costa Rica", "NZL":"New Zealand", "AUT":"Austria", "JAM":"Jamaica",
   "CZE":"The Czech Republic", "SLO":"Slovenia", "SVK":"Slovakia", "TRI":"Trinidad and Tobago"}
 
-LCM_World_Records = []; 
-SCM_World_Records = []; 
-//Other World Records
 
+/******************************Script for graphing*************************************/
+
+LCM_World_Records = []; 
 
 /*isRecord 
  * Input: Record Object
@@ -104,16 +94,15 @@ function isRecord(record) {
   let timeRegexLong = new RegExp('^[0-9]+:+[0-9]+.+[0-9]');
   let timeRegexShort = new RegExp('^[0-9]+.+[0-9]');
 
-  let dateRegex =  new RegExp('^\d{2}[\/]\d{2}[\/]\d{4}'); 
-
-  //Check time
-  if(timeRegexLong.exec(record['Time']) || timeRegexShort.exec(record['Time'])) {
-    //console.log(record);
-    return true; 
-  } else {
+  if(!timeRegexShort.exec(record['Time']) && !timeRegexLong.exec(record['Time'])) {
+    return false;
+  } 
+  if(record['Date'] == "") {
     return false; 
   }
- 
+  else {
+    return true; 
+  }
 }
 
 //Checks array for data 
@@ -127,6 +116,7 @@ function includes(data, array) {
   return false; 
 }
 
+//Convert 3 letter country name to full name
 function converCountry(countryName) {
   if(countries[countryName] != "") {
     return countries[countryName]; 
@@ -173,7 +163,7 @@ function timeToMS(timeStr) {
     time = seconds + milliseconds; 
 
   } else {
-    console.log("Error in time!"); 
+   console.log("Error in time!"); 
   }
   
   return time; 
@@ -201,8 +191,13 @@ function cleanUp(record) {
   return record;
 }
 
+/*fillArray*/ 
+function fillArray(record, array) {
+  cleanUp(record); 
+  array.push(record); 
+}
 
-/*fillArray
+/*readData
  * Input: CSV Data for USA Swimming
  * 
  * Reads in event name and then adds to 
@@ -211,7 +206,7 @@ function cleanUp(record) {
  * 
  * Adds record to array
  */
-function fillArray(data) {
+function readData(data, array) {
   
   var event = eventCSV[0]; 
  
@@ -229,46 +224,108 @@ function fillArray(data) {
     data[line].Event = event;
 
     if(isRecord(data[line])) {
-      //Clean up object
-      let record = cleanUp(data[line]); 
-      
-      //Add object to array
-      LCM_World_Records.push(record)
+      fillArray(data[line], array); 
     } 
   }
 }
 
 
+
+//Used by graph function 
+function filterArray(array, objectFilter, filterValue) {
+  let newArray = [];
+  for (i = 0; i < array.length; ++i) {
+    if(array[i][objectFilter] == filterValue) {
+      newArray.push(array[i]); 
+    }
+  }
+  return newArray; 
+
+}
+
+/*graph 
+ * 
+ * Uses d3 to add a 
+ * graph to the svg 
+ * in html.  
+ */
+function graph() {
+  console.log("Time to graph"); 
+
+  let swimDates = LCM_World_Records.map(d => d.Date);
+  let swimTimes = LCM_World_Records.map(d => d.TotalTime);
+
+
+  let swim50FreeMens = filterArray(LCM_World_Records, "Event", "Men's 50 FR LCM"); 
+  swimDates = swim50FreeMens.map(d => d.Date); 
+  let swim50FreeMensTimes = swim50FreeMens.map(d => d.TotalTime); 
+
+  /*GRAPH TIME*/ 
+  let outerWidth = 1000
+  let outerHeight = 600
+  //let margins = { top: 30, bottom: 50, left: 50, right: 30 }
+  //let innerWidth = outerWidth - margins.left - margins.right
+  //let innerHeight = outerHeight - margins.top - margins.bottom
+
+  d3.select('svg#graph')
+    .attr('width', outerWidth)
+    .attr('height', outerHeight)
+    .style('background-color', 'skyblue')
+
+
+
+  let dateXScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(swimDates))
+      .range([0, 1000])
+
+  let timeYScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(swim50FreeMensTimes))
+      .range([0, 600])
+
+
+  d3.select('svg#graph')
+    .selectAll('circle')
+    .data(swim50FreeMens)
+    .enter()
+    .append('circle')
+    .attr('cx', d => dateXScale(d.Date))
+    .attr('cy', d => timeYScale(d.TotalTime))
+    .attr('r', 2)
+    .style('fill', 'red')
+    .style('stroke-width', 5)
+    .style('opacity', 0.6);
+
+
+  //let gridlines = d3.
+
+}
+
+
+
+ 
+/*Main Function
+ * 
+ * Reads CSV Data into arrays
+ * Call Graph and darws an initial graph
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+function main(data) {
+  readData(data, LCM_World_Records); 
+  graph(); 
+}
+
+
+
+
+
 //Fill LCM_World_Records
-d3.csv("AllWorldRecords.csv").then( fillArray ); 
+d3.csv("AllWorldRecords.csv").then( main ); 
 
 
 console.log(LCM_World_Records); 
-
-
-
-/*GRAPH TIME*/ 
-let outerWidth = 1000
-let outerHeight = 1000
-let margins = { top: 30, bottom: 50, left: 50, right: 30 }
-let innerWidth = outerWidth - margins.left - margins.right
-let innerHeight = outerHeight - margins.top - margins.bottom
-
-let scatterOuter = d3
-  .select('svg#graph')
-  .attr('width', outerWidth)
-  .attr('height', outerHeight)
-
-d3.selectAll('svg')
-  .data(LCM_World_Records)
-  .enter()
-  .append('circle')
-  .attr('cx', 100)
-  .attr('cy', 100)
-  .style('fill', 'transparent')
-  .style('stroke-width', 5)
-  .transition()
-  .duration(2000)
-  .attr('r', 5)
-  .style('stroke', 5)
-  .style('opacity', 0.6)
