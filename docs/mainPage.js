@@ -138,8 +138,8 @@ function converCountry(countryName) {
 function timeToMS(timeStr) {
   var time = 0; 
   //Regex matching for long vs short times
-  let timeRegexLong = new RegExp('^[0-9]+:+[0-9]+.+[0-9]');
-  let timeRegexShort = new RegExp('^[0-9]+.+[0-9]');
+  let timeRegexLong = new RegExp('^[0-9]+:+[0-9]+.+[0-9]+');
+  let timeRegexShort = new RegExp('^[0-9]+.+[0-9]+');
   //Convert long times (00:00.00)
   if(timeRegexLong.exec(timeStr)) {
     var timeArray = timeStr.split(":"); 
@@ -149,7 +149,9 @@ function timeToMS(timeStr) {
     
     var minutes = Number(timeArray[0]) * 60000; 
     var seconds = Number(timeArray[2]) * 1000;
-    var milliseconds = Number(timeArray[3]); 
+    var milliseconds = timeArray[3] + "000";
+    milliseconds = milliseconds.substring(0, 3);
+    milliseconds = Number(milliseconds); 
     
     time = minutes + seconds + milliseconds; 
 
@@ -159,8 +161,11 @@ function timeToMS(timeStr) {
     var timeArray = timeStr.split(".");
     
     var seconds = Number(timeArray[0]) * 1000;
-    var milliseconds = Number(timeArray[1]); 
+    var milliseconds = timeArray[1] + "000";
+    milliseconds = milliseconds.substring(0, 3);
+    milliseconds = Number(milliseconds);  
     time = seconds + milliseconds; 
+    
 
   } else {
    console.log("Error in time!"); 
@@ -266,31 +271,30 @@ function graph() {
 
   let swim50FreeMensTimes = swim50FreeMens.map(d => d.TotalTime); 
   console.log(swim50FreeMensTimes);
+  console.log(swim50FreeMens);
 
   /*GRAPH TIME*/ 
   let outerWidth = 500
   let outerHeight = 500
-  //let margins = { top: 30, bottom: 50, left: 50, right: 30 }
-  //let innerWidth = outerWidth - margins.left - margins.right
-  //let innerHeight = outerHeight - margins.top - margins.bottom
+  let margins = { top: 50, bottom: 50, left: 50, right: 50 }
+  let innerWidth = outerWidth - margins.left - margins.right
+  let innerHeight = outerHeight - margins.top - margins.bottom
 
   d3.select('svg#graph')
     .attr('width', outerWidth)
     .attr('height', outerHeight)
     .style('background-color', 'skyblue')
-    .attr('align', 'center');
-
 
 
   let dateXScale = 
     d3.scaleLinear()
       .domain(d3.extent(swim50FrMensDates))
-      .range([outerWidth, 0])
+      .range([0, innerWidth])
 
   let timeYScale = 
     d3.scaleLinear()
       .domain(d3.extent(swim50FreeMensTimes))
-      .range([0, outerHeight])
+      .range([innerHeight, 0])
 
 
   d3.select('svg#graph')
@@ -298,15 +302,78 @@ function graph() {
     .data(swim50FreeMens)
     .enter()
     .append('circle')
-    .attr('cx', d => dateXScale(d.Date))
-    .attr('cy', d => timeYScale(d.TotalTime))
-    .attr('r', 4)
-    .style('fill', 'red')
+    .attr('cx', d => dateXScale(d.Date) + 50)
+    .attr('cy', d => timeYScale( + d.TotalTime) + 50)
+    .attr('r', 7)
+    .attr('fill', 'red')
     .style('stroke-width', 5)
-    .style('opacity', 0.6);
+    .style('opacity', 0.6)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo)
+
+    function showInfo (d, i) {
+      d3.select(this)
+      .style('fill', 'black')
+      d3.select('div.info')
+        .html(`<span class = "category"> Swimmer: </span>
+        <span class = "swimmer"> ${d.Athlete} </span><br>
+        <span class = "category"> Event: </span>
+        <span class = "swimmer"> ${d.Event} </span><br>
+        <span class = "category"> Swim Time: </span>
+        <span class = "swimmer"> ${d.Time} </span><br>
+        <span class = "category"> Country: </span>
+        <span class = "swimmer"> ${d.Country} </span><br>
+        <span class = "category"> When was it broken?  </span>
+        <span class = "swimmer"> ${d.Date} </span><br>
+        <span class = "category"> Rank: </span>
+        <span class = "swimmer"> ${d.Rank} </span><br>`)}
+
+    function hideInfo (d, i) {
+        d3.select(this)
+        .style('fill', 'red')
+        d3.select('div.info')
+          .text("")
+      }
 
 
-  //let gridlines = d3.
+    /*
+    function xAxisScale() {        
+        return d3.select('svg#graph')
+             .axis()
+             .scale(x)
+             .orient("bottom")
+             .ticks(5)
+    }
+    
+    function yAxisScale() {        
+        return d3.select('svg#graph')
+            .axis()
+            .scale(y)
+            .orient("left")
+            .ticks(5)
+    }
+
+    d3.select('svg#graph')
+      .append("g")         
+      .attr("class", "grid")
+      .attr("transform", "translate(0," + height + ")")
+      .call(yAxisScale()
+            .tickSize(-height, 0, 0)
+            .tickFormat("")
+    )
+
+    d3.select('svg#graph')
+      .append("g")         
+      .attr("class", "grid")
+      .call(xAxisScale()
+            .tickSize(-width, 0, 0)
+            .tickFormat("")
+    )
+
+
+*/
+
+
 
 }
 
