@@ -46,9 +46,23 @@ var dateSelect = document.getElementById('date');
 for (const date in dates) {
   var newDateOption = document.createElement("option");
   newDateOption.text = `${dates[date]}`;
+  newDateOption.value = `${dates[date]}`;
   dateSelect.add(newDateOption); 
 }
 
+
+
+//Edit the graph
+let outerWidth = 500
+let outerHeight = 500
+let margins = { top: 50, bottom: 50, left: 50, right: 50 }
+let innerWidth = outerWidth - margins.left - margins.right
+let innerHeight = outerHeight - margins.top - margins.bottom
+
+d3.select('svg#graph')
+  .attr('width', outerWidth)
+  .attr('height', outerHeight)
+  .style('background-color', 'skyblue')
 
 /******************************Data needed for creating records*******************************/
 
@@ -79,11 +93,13 @@ let countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France
   "CZE":"The Czech Republic", "SLO":"Slovenia", "SVK":"Slovakia", "TRI":"Trinidad and Tobago"}
 
 
-/******************************Script for graphing*************************************/
+/******************************Script for reading data*************************************/
 
-//Global graphing variables 
-
+//Global data variables 
 let LCM_World_Records = []; 
+let SCY_Records = []; 
+let SCM_World_Records = []; 
+
 
 /*isRecord 
  * Input: Record Object
@@ -241,25 +257,75 @@ function readData(data, array) {
 
 
 
-//Used by graph function 
-function filterArray(array, objectFilter, filterValue) {
-  let newArray = [];
-  for (i = 0; i < array.length; ++i) {
-    if(array[i][objectFilter] == filterValue) {
-      newArray.push(array[i]); 
-    }
-  }
-  return newArray; 
 
+
+
+
+
+
+ 
+/*Main Function
+ * 
+ * Reads CSV Data into arrays
+ * Call Graph and darws an initial graph
+ * 
+ * 
+ * 
+ * 
+ * 
+ */
+function main(data) {
+  readData(data, LCM_World_Records);  
 }
 
-/*graph 
+//Fill LCM_World_Records
+d3.csv("AllWorldRecords.csv").then( main ); 
+
+
+
+
+
+/******************************Script for graphing*******************************/
+
+
+//Global user input variables 
+var selectedGender = 'Both'; 
+let genderInput = document.getElementsByName('gender'); 
+var eventInput = ['50 Free']; 
+var dateInput = 'All Years';
+var distanceInput = 'LCM'; 
+
+/*getUserInput()
+ *
+ * Input: User input from index.html
+ *
+ * Sets global user input variables 
+ * 
+ */
+function getUserInput() {
+  //Get gender
+  genderInput = document.getElementsByName('gender'); 
+  for(var i = 0; i < genderInput.length; i++) {
+    if(genderInput[i].checked)
+        selectedGender = genderInput[i].value;
+  }
+  
+  
+  eventInput = document.getElementById("events").value; 
+  dateInput = document.getElementById("date").value;
+  distanceInput = document.getElementById("distance").value;  
+}
+
+
+
+
+/*drawGraph() 
  * 
  * Uses d3 to add a 
  * graph to the svg 
  * in html.  
  */
-function drawGraph(dataArray) {
+function drawGraph(dataArray) { 
 
   let dates = dataArray.map(d => d.Date);
   let times = dataArray.map(d => d.TotalTime);
@@ -267,16 +333,16 @@ function drawGraph(dataArray) {
   let dateXScale = 
     d3.scaleLinear()
       .domain(d3.extent(dates))
-      .range([0, 1000])
+      .range([0, innerWidth])
 
   let timeYScale = 
     d3.scaleLinear()
       .domain(d3.extent(times))
-      .range([0, 600])
+      .range([innerHeight, 0])
 
   d3.select('svg#graph')
     .selectAll('circle')
-    .data(swim50FreeMens)
+    .data(dataArray)
     .enter()
     .append('circle')
     .attr('cx', d => dateXScale(d.Date) + 50)
@@ -288,29 +354,29 @@ function drawGraph(dataArray) {
     .on('mouseover', showInfo)
     .on('mouseout', hideInfo)
 
-    function showInfo (d, i) {
-      d3.select(this)
-      .style('fill', 'black')
-      d3.select('div.info')
-        .html(`<span class = "category"> Swimmer: </span>
-        <span class = "swimmer"> ${d.Athlete} </span><br>
-        <span class = "category"> Event: </span>
-        <span class = "swimmer"> ${d.Event} </span><br>
-        <span class = "category"> Swim Time: </span>
-        <span class = "swimmer"> ${d.Time} </span><br>
-        <span class = "category"> Country: </span>
-        <span class = "swimmer"> ${d.Country} </span><br>
-        <span class = "category"> When was it broken?  </span>
-        <span class = "swimmer"> ${d.Date} </span><br>
-        <span class = "category"> Rank: </span>
-        <span class = "swimmer"> ${d.Rank} </span><br>`)}
+  function showInfo (d, i) {
+    d3.select(this)
+    .style('fill', 'black')
+    d3.select('div.info')
+      .html(`<span class = "category"> Swimmer: </span>
+      <span class = "swimmer"> ${d.Athlete} </span><br>
+      <span class = "category"> Event: </span>
+      <span class = "swimmer"> ${d.Event} </span><br>
+      <span class = "category"> Swim Time: </span>
+      <span class = "swimmer"> ${d.Time} </span><br>
+      <span class = "category"> Country: </span>
+      <span class = "swimmer"> ${d.Country} </span><br>
+      <span class = "category"> When was it broken?  </span>
+      <span class = "swimmer"> ${d.Date} </span><br>
+      <span class = "category"> Rank: </span>
+      <span class = "swimmer"> ${d.Rank} </span><br>`)}
 
-    function hideInfo (d, i) {
-        d3.select(this)
-        .style('fill', 'red')
-        d3.select('div.info')
-          .text("")
-      }
+  function hideInfo (d, i) {
+      d3.select(this)
+      .style('fill', 'red')
+      d3.select('div.info')
+        .text("")
+  }
 
 
     /*
@@ -349,75 +415,77 @@ function drawGraph(dataArray) {
 
 
 */
-
-
-
 }
 
-//Global user input variables 
-var selectedGender = 'Both'; 
-let genderInput = document.getElementsByName('gender'); 
-var eventInput = ['50 Free']; 
-var dateInput = 'All Years';
-var distanceInput = 'SYC'; 
 
-/*getUserInput()
- *
- * Input: User input from index.html
- *
- * Sets global user input variables 
- * 
- */
-function getUserInput() {
-  //Get gender
-  genderInput = document.getElementsByName('gender'); 
-  console.log(genderInput); 
-  for(var i = 0; i < genderInput.length; i++) {
-    if(genderInput[i].checked)
-        selectedGender = genderInput[i].value;
+
+//Used by graph function 
+function filterArray(array) {
+  
+  //Set up event for filter
+  var event = "";  
+  if (selectedGender == 'male') {
+    event = "Men's " + eventInput + " " + distanceInput;  
+  } 
+  else if(selectedGender == 'female') {
+    event = "Women's " + eventInput + " " + distanceInput;  
+  } else {
+    event = eventInput + " " + distanceInput;
   }
+
+  console.log("Filter Event: " + selectedGender); 
   
-  
-  eventInput = document.getElementById("events").value; 
-  dateInput = document.getElementById("date").value;
-  distanceInput = document.getElementById("distance").value;  
+  let newArray = [];
+  for (i = 0; i < array.length; ++i) {
+      if(dateInput != "All Years" && array[i]['Date'].getFullYear() <= dateInput) {
+        continue; 
+      }
+      if(selectedGender != 'both' && array[i]['Event'] != event) {
+        continue; 
+      } 
+      if(!array[i]['Event'].includes(event)) {
+        continue; 
+      }
+      else {
+        newArray.push(array[i]); 
+      }
+  }
+  return newArray;
 }
 
 
+/*graph()
+ * Connected to graph button. 
+ * 
+ * Calls user input, sets 
+ * data to specific array based 
+ * off of user input. Then 
+ * calls drawGraph(); 
+ * 
+ */ 
 function graph() {
-  getUserInput(); 
-  console.log('Graphing...'); 
-  console.log(distanceInput); 
+  //delete old graph
+  d3.select('svg#graph')
+    .selectAll('circle')
+    .remove();
 
 
 
+  getUserInput();  
+  let data = [];
+
+
+  if(distanceInput == "SCY") {
+    data = filterArray(SCY_Records); 
+  } 
+  else if(distanceInput == "SCM") {
+    data = filterArray(SCM_World_Records, event); 
+  } 
+  else if(distanceInput == "LCM") {
+    console.log("Filtering Array"); 
+
+    data = filterArray(LCM_World_Records, event); 
+  } 
+  console.log(data); 
+  drawGraph(data); 
 }
-
-
-
-
- 
-/*Main Function
- * 
- * Reads CSV Data into arrays
- * Call Graph and darws an initial graph
- * 
- * 
- * 
- * 
- * 
- */
-function main(data) {
-  readData(data, LCM_World_Records); 
-  drawGraph(); 
-}
-
-//Fill LCM_World_Records
-d3.csv("AllWorldRecords.csv").then( main ); 
-
-
-
-
-
-
-console.log(LCM_World_Records); 
