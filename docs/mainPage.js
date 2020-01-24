@@ -276,14 +276,21 @@ function graph() {
   /*GRAPH TIME*/ 
   let outerWidth = 500
   let outerHeight = 500
-  let margins = { top: 50, bottom: 50, left: 50, right: 50 }
+  let margins = { top: 60, bottom: 60, left: 60, right: 60 }
   let innerWidth = outerWidth - margins.left - margins.right
   let innerHeight = outerHeight - margins.top - margins.bottom
 
-  d3.select('svg#graph')
+  let graphOuter = d3
+    .select('svg#graph')
     .attr('width', outerWidth)
     .attr('height', outerHeight)
     .style('background-color', 'skyblue')
+
+  let graphInner = graphOuter
+    .append('g')
+    .attr('width', innerWidth)
+    .attr('height', innerHeight)
+    .attr('transform', 'translate(' + margins.left + ',' + margins.right + ')')
 
 
   let dateXScale = 
@@ -291,19 +298,50 @@ function graph() {
       .domain(d3.extent(swim50FrMensDates))
       .range([0, innerWidth])
 
+  let xAxis = d3.axisBottom(dateXScale).tickSize(-innerHeight)
+
+
   let timeYScale = 
     d3.scaleLinear()
       .domain(d3.extent(swim50FreeMensTimes))
       .range([innerHeight, 0])
 
+  let yAxis = d3.axisLeft(timeYScale).tickSize(-innerHeight)
 
-  d3.select('svg#graph')
+
+
+  /*  Curved lines
+      Need to add another array
+      var points = [
+        [Date1, Time1],
+        [Date2, Time2]
+      ]
+  */ 
+
+
+
+  /*
+  var lineGenerator = d3.line()
+  .curve(d3.curveCardinal); 
+
+  var pathData = lineGenerator(swim50FreeMens);
+
+  d3.select('path')
+    .attr('d', pathData)
+  */
+
+ var line = d3.line()
+              .x(function(d, i) { return dateXScale(i); })
+              .y(function(d) { return timeYScale(d.y); })
+              .curve(d3.curveMonotoneX)
+
+  graphInner
     .selectAll('circle')
     .data(swim50FreeMens)
     .enter()
     .append('circle')
-    .attr('cx', d => dateXScale(d.Date) + 50)
-    .attr('cy', d => timeYScale( + d.TotalTime) + 50)
+    .attr('cx', d => dateXScale(d.Date))
+    .attr('cy', d => timeYScale( + d.TotalTime))
     .attr('r', 7)
     .attr('fill', 'red')
     .style('stroke-width', 5)
@@ -311,29 +349,69 @@ function graph() {
     .on('mouseover', showInfo)
     .on('mouseout', hideInfo)
 
+  
+
     function showInfo (d, i) {
       d3.select(this)
-      .style('fill', 'black')
+        .style('fill', 'black')
       d3.select('div.info')
         .html(`<span class = "category"> Swimmer: </span>
-        <span class = "swimmer"> ${d.Athlete} </span><br>
-        <span class = "category"> Event: </span>
-        <span class = "swimmer"> ${d.Event} </span><br>
-        <span class = "category"> Swim Time: </span>
-        <span class = "swimmer"> ${d.Time} </span><br>
-        <span class = "category"> Country: </span>
-        <span class = "swimmer"> ${d.Country} </span><br>
-        <span class = "category"> When was it broken?  </span>
-        <span class = "swimmer"> ${d.Date} </span><br>
-        <span class = "category"> Rank: </span>
-        <span class = "swimmer"> ${d.Rank} </span><br>`)}
+          <span class = "swimmer"> ${d.Athlete} </span><br>
+          <span class = "category"> Event: </span>
+          <span class = "swimmer"> ${d.Event} </span><br>
+          <span class = "category"> Swim Time: </span>
+          <span class = "swimmer"> ${d.Time} </span><br>
+          <span class = "category"> Country: </span>
+          <span class = "swimmer"> ${d.Country} </span><br>
+          <span class = "category"> When was it broken?  </span>
+          <span class = "swimmer"> ${d.Date} </span><br>
+          <span class = "category"> Rank: </span>
+          <span class = "swimmer"> ${d.Rank} </span><br>`)}
 
     function hideInfo (d, i) {
         d3.select(this)
-        .style('fill', 'red')
+          .style('fill', 'red')
         d3.select('div.info')
           .text("")
       }
+
+
+  
+
+    // create axes
+    graphInner
+      .append('g')
+      .attr('transform', 'translate(' + 0 + ', ' + innerHeight + ')')
+      .attr('class', 'x-axis')
+      //.attr('transform', 'rotate(-90)')
+      .call(xAxis)
+
+    graphInner
+      .append('g')
+      .attr('class', 'y-axis')
+      .call(yAxis)
+
+    graphOuter
+      .append('text')
+      .attr('class', 'x-axis')
+      .attr('x', margins.left + innerWidth / 2)
+      .attr('y', outerHeight - margins.bottom / 4)
+      .attr('text-anchor', 'middle')
+      .text("Date: Earliest to Most Recent")
+  
+    graphOuter
+      .append('text')
+      .attr('class', 'y axis')
+      .attr('x', margins.left / 2)
+      .attr('y', (margins.bottom + innerHeight) / 2 + 20)
+      .attr('text-anchor', 'middle')
+      .attr(
+        'transform',
+        `rotate(-90 ${margins.left / 2} ${margins.bottom + innerHeight / 2})`)
+      .text("Swim Time")
+
+
+
 
 
     /*
@@ -356,9 +434,9 @@ function graph() {
     d3.select('svg#graph')
       .append("g")         
       .attr("class", "grid")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + innerHeight + ")")
       .call(yAxisScale()
-            .tickSize(-height, 0, 0)
+            .tickSize(-innerHeight, 0, 0)
             .tickFormat("")
     )
 
@@ -366,13 +444,11 @@ function graph() {
       .append("g")         
       .attr("class", "grid")
       .call(xAxisScale()
-            .tickSize(-width, 0, 0)
+            .tickSize(-innerWidth, 0, 0)
             .tickFormat("")
     )
 
-
 */
-
 
 
 }
