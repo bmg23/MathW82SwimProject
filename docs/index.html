@@ -12,31 +12,33 @@
 
 </head>
 
-    <body>
-        <div class="topOfPage">
-            <h1 class="header">Swim Time Progression</h1>
+    <body class="row">
+        <div class="header">
+            <h1>Swim Time Progression</h1>
         </div>
         
         <!---Graph Input Options-->
-        <p class="option">Gender</p>
-        <input type="radio" name="gender" value="male"> Male </input>
-        <input type="radio" name="gender" value="female"> Female </input>
-        <input type="radio" name="gender" value="female"> Both </input>
-        
-        <p class="option">Event</p>
-        <select multiple id="events"></select>
-        <p class="smallText">Use Ctrl+Click to select multiple events</p>
-        
-        <p class="option">Date</p>
-        <select multiple id="date"></select>
-        <p class="smallText">Use Ctrl+Click to select multiple dates</p>
+        <div class = 'column'>
+            <p class="option">Gender</p>
+            <input type="radio" name="gender" value="male"> Male </input>
+            <input type="radio" name="gender" value="female"> Female </input>
+            <input type="radio" name="gender" value="female"> Both </input>
+            
+            <p class="option">Event</p>
+            <select multiple id="events"></select>
+            <p class="smallText">Use Ctrl+Click to select multiple events</p>
+            
+            <p class="option">Date</p>
+            <select multiple id="date"></select>
+            <p class="smallText">Use Ctrl+Click to select multiple dates</p>
+        </div>
 
 
+        <div class="graph">
 
-        <h2>Record Progression Graph</h2>
-        <div>
             <svg id="graph"></svg>
-        </div>    
+        </div>
+        <div class = "info"></div>    
     </body>
 
     <script src="https://d3js.org/d3.v5.min.js"></script>
