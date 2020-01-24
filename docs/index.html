@@ -12,11 +12,10 @@
 
 </head>
 
-    <body>
-        <div class="topOfPage">
-            <h1 class="header">Swim Time Progression</h1>
+    <body class="row">
+        <div class="header">
+            <h1>Swim Time Progression</h1>
         </div>
-        
         <div>
             <form>
                 <!---Graph Input Options-->
@@ -47,11 +46,11 @@
             <button class="graphButton" onclick="graph()">Graph</button>
         </div>
 
+        <div class="graph">
 
-        <h2>Record Progression Graph</h2>
-        <div>
             <svg id="graph"></svg>
-        </div>    
+        </div>
+        <div class = "info"></div>    
     </body>
 
     <script src="https://d3js.org/d3.v5.min.js"></script>
