@@ -33,7 +33,6 @@
   float: left;
   padding: 20px;
   width: 50%; 
-  background-color: skyblue;
 }
 
 .column {
@@ -66,4 +65,19 @@
 }
 .grid path {
     stroke-width: 0;
+}
+
+
+.axis path {
+  display: none;
+}
+
+.axis line {
+  stroke-opacity: 1;
+  shape-rendering: crispEdges;
+}
+
+.view {
+  fill: url(#gradient);
+  stroke: #000;
 }

@@ -52,17 +52,7 @@ for (const date in dates) {
 
 
 
-//Edit the graph
-let outerWidth = 650
-let outerHeight = 650
-let margins = { top: 50, bottom: 50, left: 50, right: 50 }
-let innerWidth = outerWidth - margins.left - margins.right
-let innerHeight = outerHeight - margins.top - margins.bottom
 
-d3.select('svg#graph')
-  .attr('width', outerWidth)
-  .attr('height', outerHeight)
-  .style('background-color', 'skyblue')
 
 /******************************Data needed for creating records*******************************/
 
@@ -257,13 +247,6 @@ function readData(data, array) {
 
 
 
-
-
-
-
-
-
- 
 /*Main Function
  * 
  * Reads CSV Data into arrays
@@ -284,8 +267,11 @@ d3.csv("AllWorldRecords.csv").then( main );
 
 
 
-
 /******************************Script for graphing*******************************/
+ 
+
+
+
 
 
 //Global user input variables 
@@ -316,103 +302,51 @@ function getUserInput() {
   distanceInput = document.getElementById("distance").value;  
 }
 
+//Shows description of dots
+function showInfo (d, i) {
+  d3.select(this)
+  .style('fill', 'black')
+  d3.select('div.info')
+    .html(`<span class = "category"> Swimmer: </span>
+    <span class = "swimmer"> ${d.Athlete} </span><br>
+    <span class = "category"> Event: </span>
+    <span class = "swimmer"> ${d.Event} </span><br>
+    <span class = "category"> Swim Time: </span>
+    <span class = "swimmer"> ${d.Time} </span><br>
+    <span class = "category"> Country: </span>
+    <span class = "swimmer"> ${d.Country} </span><br>
+    <span class = "category"> When was it broken?  </span>
+    <span class = "swimmer"> ${d.Date} </span><br>
+    <span class = "category"> Rank: </span>
+    <span class = "swimmer"> ${d.Rank} </span><br>`)
+}
+
+function hideInfo (d, i) {
+    d3.select(this)
+    .style('fill', 'red')
+    d3.select('div.info')
+      .text("")
+}
 
 
-
-/*drawGraph() 
- * 
- * Uses d3 to add a 
- * graph to the svg 
- * in html.  
- */
-function drawGraph(dataArray) { 
-
-  //Data for graph
-  let dates = dataArray.map(d => d.Date);
-  let times = dataArray.map(d => d.TotalTime);
-
-  //Variables for dots
-  let dateXScale = 
-    d3.scaleLinear()
-      .domain(d3.extent(dates))
-      .range([0, innerWidth])
-
-  let timeYScale = 
-    d3.scaleLinear()
-      .domain(d3.extent(times))
-      .range([innerHeight, 0])
-
-  //Variables for axis 
-  let graphOuter = d3
-    .select('svg#graph')
-    .attr('width', outerWidth)
-    .attr('height', outerHeight)
-    .style('background-color', 'skyblue')
-
-  let graphInner = graphOuter
-    .append('g')
-    .attr('width', innerWidth)
-    .attr('height', innerHeight)
-    .attr('transform', 'translate(' + margins.left + ',' + margins.right + ')')
-
-  let xAxis = d3.axisBottom(dateXScale).tickSize(-innerHeight)
-  let yAxis = d3.axisLeft(timeYScale).tickSize(-innerHeight)
-
-  
-
-  d3.select('svg#graph')
+function plotPoints(dataArray, dateXScale, timeYScale, graphInner, dot) {
+  graphInner
     .selectAll('circle')
     .data(dataArray)
     .enter()
     .append('circle')
-    .attr('cx', d => dateXScale(d.Date) + 50)
-    .attr('cy', d => timeYScale( + d.TotalTime) + 50)
-    .attr('r', 3)
-    .attr('fill', 'red')
-    .style('stroke-width', 0.5)
-    .style('opacity', 0.6)
+    .attr('cx', d => dateXScale(d.Date))
+    .attr('cy', d => timeYScale( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
     .on('mouseover', showInfo)
-    .on('mouseout', hideInfo)
+    .on('mouseout', hideInfo);
 
-  function showInfo (d, i) {
-    d3.select(this)
-    .style('fill', 'black')
-    d3.select('div.info')
-      .html(`<span class = "category"> Swimmer: </span>
-      <span class = "swimmer"> ${d.Athlete} </span><br>
-      <span class = "category"> Event: </span>
-      <span class = "swimmer"> ${d.Event} </span><br>
-      <span class = "category"> Swim Time: </span>
-      <span class = "swimmer"> ${d.Time} </span><br>
-      <span class = "category"> Country: </span>
-      <span class = "swimmer"> ${d.Country} </span><br>
-      <span class = "category"> When was it broken?  </span>
-      <span class = "swimmer"> ${d.Date} </span><br>
-      <span class = "category"> Rank: </span>
-      <span class = "swimmer"> ${d.Rank} </span><br>`)}
+}
 
-  function hideInfo (d, i) {
-      d3.select(this)
-      .style('fill', 'red')
-      d3.select('div.info')
-        .text("")
-  }
-
-  graphInner
-  .selectAll('circle')
-  .data(dataArray)
-  .enter()
-  .append('circle')
-  .attr('cx', d => dateXScale(d.Date))
-  .attr('cy', d => timeYScale( + d.TotalTime))
-  .attr('r', 4)
-  .attr('fill', 'red')
-  .style('stroke-width', 0.5)
-  .style('opacity', 0.6)
-  .on('mouseover', showInfo)
-  .on('mouseout', hideInfo)
-
-
+function drawAxis(graphInner, graphOuter, xAxis, yAxis) {
 
   // create axes
   graphInner
@@ -427,14 +361,16 @@ function drawGraph(dataArray) {
     .attr('class', 'y-axis')
     .call(yAxis)
 
+  //X Axis Text
   graphOuter
     .append('text')
     .attr('class', 'x-axis')
     .attr('x', margins.left + innerWidth / 2)
     .attr('y', outerHeight - margins.bottom / 4)
     .attr('text-anchor', 'middle')
-    .text("Date: Earliest to Most Recent")
+    .text("Date")
 
+  //Y Axis Text
   graphOuter
     .append('text')
     .attr('class', 'y axis')
@@ -444,46 +380,142 @@ function drawGraph(dataArray) {
     .attr(
       'transform',
       `rotate(-90 ${margins.left / 2} ${margins.bottom + innerHeight / 2})`)
-    .text("Swim Time")
+    .text("Time")
+}
+
+function timeToString(time) {
+  var minutes = 0; 
+  var seconds = 0; 
+  var milliseconds = 0; 
+  
+  //Get minutes if any
+  if (time / 60000 > 1) {
+    minutes = Math.floor(time / 60000);   
+  } 
+
+  //Subtract minutes, if minutes is 0 this does nothing
+  time = time - (60000*minutes); 
+  //Get seconds
+  seconds = Math.floor(time / 1000); 
+  //Subtract seconds from total time
+  time = time - (1000*seconds); 
+  //All time left over is milliseconds
+  milliseconds = time;
 
 
+  if(minutes > 0) { 
+    return `${minutes}:${seconds}.${milliseconds}`;
+  } else {
+    return `${seconds}.${milliseconds}`;
+  }
 
-    /*
-    function xAxisScale() {        
-        return d3.select('svg#graph')
-             .axis()
-             .scale(x)
-             .orient("bottom")
-             .ticks(5)
-    }
-    
-    function yAxisScale() {        
-        return d3.select('svg#graph')
-            .axis()
-            .scale(y)
-            .orient("left")
-            .ticks(5)
-    }
+}
 
-    d3.select('svg#graph')
-      .append("g")         
-      .attr("class", "grid")
-      .attr("transform", "translate(0," + height + ")")
-      .call(yAxisScale()
-            .tickSize(-height, 0, 0)
-            .tickFormat("")
-    )
+function dateToString(tick) {
+  var d = new Date(tick);  
+  return d.getDay() + "/" + d.getMonth() + "/" + d.getFullYear(); 
+}
 
-    d3.select('svg#graph')
-      .append("g")         
-      .attr("class", "grid")
-      .call(xAxisScale()
-            .tickSize(-width, 0, 0)
-            .tickFormat("")
-    )
+/*drawGraph() 
+ * 
+ * Uses d3 to add a 
+ * graph to the svg 
+ * in html.  
+ */
+function drawGraph(dataArray) { 
+  
+ 
+
+  //Data for graph
+  let dates = dataArray.map(d => d.Date);
+  let times = dataArray.map(d => d.TotalTime);
+
+  //Variables for dots
+  let dateXScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(dates))
+      .range([0, innerWidth])
+
+  let timeYScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(times))
+      .range([innerHeight - 5, 0])
+
+  //Variables for axis 
+  let graphOuter = d3
+    .select('svg#graph')
+    .attr('width', outerWidth)
+    .attr('height', outerHeight)
+    .style('background-color', 'skyblue')
+
+  let graphInner = graphOuter
+    .append('g')
+    .attr('width', innerWidth)
+    .attr('height', innerHeight)
+    .attr('transform', 'translate(' + margins.left + ',' + margins.right + ')')
+
+  let xAxis = d3.axisTop(dateXScale)
+                .tickSize(-innerHeight)
+                .tickFormat(dateToString); 
+
+  let yAxis = d3.axisLeft(timeYScale)
+                .tickSize(-innerWidth)
+                .tickFormat(timeToString);
 
 
-*/
+  
+  //Zoom
+  var svg = d3.select("svg#graph");
+
+
+  var zoom = d3.zoom()
+    .scaleExtent([1, 40])
+    .translateExtent([[-100, -100], [innerWidth + 100, innerHeight + 100]])
+    .on("zoom", zoomed);
+
+  var view = graphInner; 
+
+  var gX = svg.append("g")
+      .attr("class", "axis")
+      .call(xAxis);
+
+  var gY = svg.append("g")
+      .attr("class", "axis")
+      .call(yAxis);
+
+  var x = d3.scaleLinear()
+    .domain([-50, innerWidth + 5])
+    .range([-50, innerWidth + 5]);
+  
+  var y = d3.scaleLinear()
+      .domain([-50, innerHeight + 1])
+      .range([-50, innerHeight + 1]);
+
+
+  function zoomed() {
+    view.attr("transform", d3.event.transform);
+    gY.call(xAxis.scale(d3.event.transform.rescaleX(x)));
+    gX.call(yAxis.scale(d3.event.transform.rescaleY(y)));
+  }
+
+  function resetted() {
+    svg.transition()
+        .duration(750)
+        .call(zoom.transform, d3.zoomIdentity);
+  }
+
+
+  let dot = {
+    fill: 'red', 
+    radius: 3,
+    stroke_width: 1, 
+    opacity: 0.6
+  }
+  
+  
+  plotPoints(dataArray, dateXScale, timeYScale, graphInner, dot) 
+  //drawAxis(graphInner, graphOuter, xAxis, yAxis); 
+  svg.call(zoom);
 }
 
 
@@ -521,17 +553,86 @@ function filterArray(array) {
   }
   return newArray;
 }
+function drawGraph2(dataArray) {
+  // set the dimensions and margins of the graph
+  var margin = {top: 10, right: 30, bottom: 30, left: 60},
+   width = 460 - margin.left - margin.right,
+   height = 400 - margin.top - margin.bottom;
 
+  // append the SVG object to the body of the page
+  var SVG = d3.select("#graph")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+  // Add X axis
+  var x = d3.scaleLinear()
+    .domain([4, 8])
+    .range([ 0, width ]);
+  var xAxis = SVG.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+  // Add Y axis
+  var y = d3.scaleLinear()
+    .domain([0, 9])
+    .range([ height, 0]);
+  var yAxis = SVG.append("g")
+    .call(d3.axisLeft(y));
+
+  // Add a clipPath: everything out of this area won't be drawn.
+  var clip = SVG.append("defs").append("SVG:clipPath")
+    .attr("id", "clip")
+    .append("SVG:rect")
+    .attr("width", width )
+    .attr("height", height )
+    .attr("x", 0)
+    .attr("y", 0);
+
+  var plot = SVG.append("g")
+                .attr("clip-path", "url(#clip)")
+
+  let dot = {
+    fill: 'red', 
+    radius: 3,
+    stroke_width: 1, 
+    opacity: 0.6
+  }
+  
+  
+  plot
+    .selectAll('circle')
+    .data(dataArray)
+    .enter()
+    .append('circle')
+    .attr('cx', d => dateXScale(d.Date))
+    .attr('cy', d => timeYScale( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo);
+
+
+  // Set the zoom and Pan features: how much you can zoom, on which part, and what to do when there is a zoom
+  var zoom = d3.zoom()
+      .scaleExtent([.5, 20])  // This control how much you can unzoom (x0.5) and zoom (x20)
+      .extent([[0, 0], [width, height]])
+      .on("zoom", updateChart);
+
+
+
+
+}
 
 /*graph()
  * Connected to graph button. 
  * 
- * Calls user input, sets 
- * data to specific array based 
- * off of user input. Then 
- * calls drawGraph(); 
- * 
- */ 
+ */
 function graph() {
   //delete old graph
   d3.select('svg#graph')
@@ -543,9 +644,6 @@ function graph() {
   d3.select('svg#graph')
   .selectAll('text')
   .remove();
-
-
-
 
   getUserInput();  
   let data = [];
@@ -563,5 +661,11 @@ function graph() {
     data = filterArray(LCM_World_Records, event); 
   } 
   console.log(data); 
-  drawGraph(data); 
+  drawGraph2(data); 
 }
+
+
+
+
+
+ 
