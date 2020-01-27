@@ -53,8 +53,8 @@ for (const date in dates) {
 
 
 //Edit the graph
-let outerWidth = 500
-let outerHeight = 500
+let outerWidth = 650
+let outerHeight = 650
 let margins = { top: 50, bottom: 50, left: 50, right: 50 }
 let innerWidth = outerWidth - margins.left - margins.right
 let innerHeight = outerHeight - margins.top - margins.bottom
@@ -327,9 +327,11 @@ function getUserInput() {
  */
 function drawGraph(dataArray) { 
 
+  //Data for graph
   let dates = dataArray.map(d => d.Date);
   let times = dataArray.map(d => d.TotalTime);
 
+  //Variables for dots
   let dateXScale = 
     d3.scaleLinear()
       .domain(d3.extent(dates))
@@ -340,6 +342,24 @@ function drawGraph(dataArray) {
       .domain(d3.extent(times))
       .range([innerHeight, 0])
 
+  //Variables for axis 
+  let graphOuter = d3
+    .select('svg#graph')
+    .attr('width', outerWidth)
+    .attr('height', outerHeight)
+    .style('background-color', 'skyblue')
+
+  let graphInner = graphOuter
+    .append('g')
+    .attr('width', innerWidth)
+    .attr('height', innerHeight)
+    .attr('transform', 'translate(' + margins.left + ',' + margins.right + ')')
+
+  let xAxis = d3.axisBottom(dateXScale).tickSize(-innerHeight)
+  let yAxis = d3.axisLeft(timeYScale).tickSize(-innerHeight)
+
+  
+
   d3.select('svg#graph')
     .selectAll('circle')
     .data(dataArray)
@@ -347,9 +367,9 @@ function drawGraph(dataArray) {
     .append('circle')
     .attr('cx', d => dateXScale(d.Date) + 50)
     .attr('cy', d => timeYScale( + d.TotalTime) + 50)
-    .attr('r', 7)
+    .attr('r', 3)
     .attr('fill', 'red')
-    .style('stroke-width', 5)
+    .style('stroke-width', 0.5)
     .style('opacity', 0.6)
     .on('mouseover', showInfo)
     .on('mouseout', hideInfo)
@@ -377,6 +397,55 @@ function drawGraph(dataArray) {
       d3.select('div.info')
         .text("")
   }
+
+  graphInner
+  .selectAll('circle')
+  .data(dataArray)
+  .enter()
+  .append('circle')
+  .attr('cx', d => dateXScale(d.Date))
+  .attr('cy', d => timeYScale( + d.TotalTime))
+  .attr('r', 4)
+  .attr('fill', 'red')
+  .style('stroke-width', 0.5)
+  .style('opacity', 0.6)
+  .on('mouseover', showInfo)
+  .on('mouseout', hideInfo)
+
+
+
+  // create axes
+  graphInner
+    .append('g')
+    .attr('transform', 'translate(' + 0 + ', ' + innerHeight + ')')
+    .attr('class', 'x-axis')
+    //.attr('transform', 'rotate(-90)')
+    .call(xAxis)
+
+  graphInner
+    .append('g')
+    .attr('class', 'y-axis')
+    .call(yAxis)
+
+  graphOuter
+    .append('text')
+    .attr('class', 'x-axis')
+    .attr('x', margins.left + innerWidth / 2)
+    .attr('y', outerHeight - margins.bottom / 4)
+    .attr('text-anchor', 'middle')
+    .text("Date: Earliest to Most Recent")
+
+  graphOuter
+    .append('text')
+    .attr('class', 'y axis')
+    .attr('x', margins.left / 2)
+    .attr('y', (margins.bottom + innerHeight) / 2 + 20)
+    .attr('text-anchor', 'middle')
+    .attr(
+      'transform',
+      `rotate(-90 ${margins.left / 2} ${margins.bottom + innerHeight / 2})`)
+    .text("Swim Time")
+
 
 
     /*
@@ -468,6 +537,13 @@ function graph() {
   d3.select('svg#graph')
     .selectAll('circle')
     .remove();
+  d3.select('svg#graph')
+  .selectAll('g')
+  .remove();
+  d3.select('svg#graph')
+  .selectAll('text')
+  .remove();
+
 
 
 
