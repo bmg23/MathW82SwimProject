@@ -10,10 +10,12 @@
 /******************************Script for editing page*******************************/
 
 //Event List
-events = ["400 Free-R Mixed", "400 Medley-R Mixed", "50 Free", "100 Free", "200 Free",
-          "400 Free", "800 Free", "1500 Free","50 Back", "100 Back", "200 Back", "50 Breast",
-          "100 Breast", "200 Breast", "50 Fly", "100 Fly", "200 Fly", "200 IM", "400 IM",
-          "400 Free Relay",  "800 Free Relay", "400 Medley Relay"]; 
+events = ["50 FR", "100 FR", "200 FR", "400 FR", 
+          "800 FR", "1500 FR", "50 BK", "100 BK", 
+          "200 BK", "50 BR", "100 BR", "200 BR", 
+          "50 FL", "100 FL", "200 FL", "200 IM", 
+          "400 IM", "400 FR-R", "Mixed 400 FR-R", 
+          "800 FR-R", "400 MED-R", "Mixed 400 MED-R"]; 
 
 
 
@@ -22,28 +24,17 @@ var eventSelect = document.getElementById('events');
 for (const event in events) {
   var newEventOption = document.createElement("option");
   newEventOption.text = `${events[event]}`;
+  newEventOption.value = `${events[event]}`;
   eventSelect.add(newEventOption); 
 }
 
-//Dates
-//Probably going to change to 1,5,10,all 
-dates = [];
+//Date Slider
+var slider = document.getElementById("myRange");
+var output = document.getElementById("demo");
+output.innerHTML = slider.value;
 
-var oldestRecord = 1956; 
-var currentYear = new Date().getFullYear(); 
-
-for (i = oldestRecord; i <= currentYear; ++i) {
-  dates.unshift(i); 
-}
-
-dates.unshift("All"); 
-
-var dateSelect = document.getElementById('date');
-
-for (const date in dates) {
-  var newDateOption = document.createElement("option");
-  newDateOption.text = `${dates[date]}`;
-  dateSelect.add(newDateOption); 
+slider.oninput = function() {
+  output.innerHTML = this.value;
 }
 
 
@@ -76,9 +67,13 @@ let countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France
   "CZE":"The Czech Republic", "SLO":"Slovenia", "SVK":"Slovakia", "TRI":"Trinidad and Tobago"}
 
 
-/******************************Script for graphing*************************************/
+/******************************Script for reading data*************************************/
 
+//Global data variables 
 let LCM_World_Records = []; 
+let SCY_Records = []; 
+let SCM_World_Records = []; 
+
 
 /*isRecord 
  * Input: Record Object
@@ -236,150 +231,6 @@ function readData(data, array) {
 
 
 
-//Used by graph function 
-function filterArray(array, objectFilter, filterValue) {
-  let newArray = [];
-  for (i = 0; i < array.length; ++i) {
-    if(array[i][objectFilter] == filterValue) {
-      newArray.push(array[i]); 
-    }
-  }
-  return newArray; 
-
-}
-
-/*graph 
- * 
- * Uses d3 to add a 
- * graph to the svg 
- * in html.  
- */
-function graph() {
-  console.log("Time to graph"); 
-
-  let swimDates = LCM_World_Records.map(d => d.Date);
-  let swimTimes = LCM_World_Records.map(d => d.TotalTime);
-
-
-  
-
-  let swim50FreeMens = filterArray(LCM_World_Records, "Event", "Men's 50 FR LCM"); 
-
-
-  let swim50FrMensDates = swim50FreeMens.map(d => d.Date); 
-  
-
-  let swim50FreeMensTimes = swim50FreeMens.map(d => d.TotalTime); 
-  console.log(swim50FreeMensTimes);
-  console.log(swim50FreeMens);
-
-  /*GRAPH TIME*/ 
-  let outerWidth = 500
-  let outerHeight = 500
-  let margins = { top: 50, bottom: 50, left: 50, right: 50 }
-  let innerWidth = outerWidth - margins.left - margins.right
-  let innerHeight = outerHeight - margins.top - margins.bottom
-
-  d3.select('svg#graph')
-    .attr('width', outerWidth)
-    .attr('height', outerHeight)
-    .style('background-color', 'skyblue')
-
-
-  let dateXScale = 
-    d3.scaleLinear()
-      .domain(d3.extent(swim50FrMensDates))
-      .range([0, innerWidth])
-
-  let timeYScale = 
-    d3.scaleLinear()
-      .domain(d3.extent(swim50FreeMensTimes))
-      .range([innerHeight, 0])
-
-
-  d3.select('svg#graph')
-    .selectAll('circle')
-    .data(swim50FreeMens)
-    .enter()
-    .append('circle')
-    .attr('cx', d => dateXScale(d.Date) + 50)
-    .attr('cy', d => timeYScale( + d.TotalTime) + 50)
-    .attr('r', 7)
-    .attr('fill', 'red')
-    .style('stroke-width', 5)
-    .style('opacity', 0.6)
-    .on('mouseover', showInfo)
-    .on('mouseout', hideInfo)
-
-    function showInfo (d, i) {
-      d3.select(this)
-      .style('fill', 'black')
-      d3.select('div.info')
-        .html(`<span class = "category"> Swimmer: </span>
-        <span class = "swimmer"> ${d.Athlete} </span><br>
-        <span class = "category"> Event: </span>
-        <span class = "swimmer"> ${d.Event} </span><br>
-        <span class = "category"> Swim Time: </span>
-        <span class = "swimmer"> ${d.Time} </span><br>
-        <span class = "category"> Country: </span>
-        <span class = "swimmer"> ${d.Country} </span><br>
-        <span class = "category"> When was it broken?  </span>
-        <span class = "swimmer"> ${d.Date} </span><br>
-        <span class = "category"> Rank: </span>
-        <span class = "swimmer"> ${d.Rank} </span><br>`)}
-
-    function hideInfo (d, i) {
-        d3.select(this)
-        .style('fill', 'red')
-        d3.select('div.info')
-          .text("")
-      }
-
-
-    /*
-    function xAxisScale() {        
-        return d3.select('svg#graph')
-             .axis()
-             .scale(x)
-             .orient("bottom")
-             .ticks(5)
-    }
-    
-    function yAxisScale() {        
-        return d3.select('svg#graph')
-            .axis()
-            .scale(y)
-            .orient("left")
-            .ticks(5)
-    }
-
-    d3.select('svg#graph')
-      .append("g")         
-      .attr("class", "grid")
-      .attr("transform", "translate(0," + height + ")")
-      .call(yAxisScale()
-            .tickSize(-height, 0, 0)
-            .tickFormat("")
-    )
-
-    d3.select('svg#graph')
-      .append("g")         
-      .attr("class", "grid")
-      .call(xAxisScale()
-            .tickSize(-width, 0, 0)
-            .tickFormat("")
-    )
-
-
-*/
-
-
-
-}
-
-
-
- 
 /*Main Function
  * 
  * Reads CSV Data into arrays
@@ -391,16 +242,328 @@ function graph() {
  * 
  */
 function main(data) {
-  readData(data, LCM_World_Records); 
-  graph(); 
+  readData(data, LCM_World_Records);  
 }
-
-
-
-
 
 //Fill LCM_World_Records
 d3.csv("AllWorldRecords.csv").then( main ); 
 
 
-console.log(LCM_World_Records); 
+
+
+/******************************Script for graphing*******************************/
+//Global user input variables 
+var selectedGender = 'Both'; 
+let genderInput = document.getElementsByName('gender'); 
+var dateInput = slider.value; 
+var eventInput = ['50 Free']; 
+var distanceInput = 'LCM'; 
+
+/*getUserInput()
+ *
+ * Input: User input from index.html
+ *
+ * Sets global user input variables 
+ * 
+ */
+function getUserInput() {
+  //Get gender
+  genderInput = document.getElementsByName('gender'); 
+  for(var i = 0; i < genderInput.length; i++) {
+    if(genderInput[i].checked)
+        selectedGender = genderInput[i].value;
+  }
+  
+  
+  eventInput = document.getElementById("events").value; 
+  dateInput = slider.value; 
+  console.log(dateInput); 
+  distanceInput = document.getElementById("distance").value;  
+}
+
+//Used by graph function 
+function filterArray(array) {
+  //Set up event for filter
+  var event = "";  
+  if (selectedGender == 'male') {
+    event = "Men's " + eventInput + " " + distanceInput;  
+  } 
+  else if(selectedGender == 'female') {
+    event = "Women's " + eventInput + " " + distanceInput;  
+  } else {
+    event = eventInput + " " + distanceInput;
+  }
+ 
+  
+  let newArray = [];
+  for (i = 0; i < array.length; ++i) {
+      if(array[i]['Date'].getFullYear() > dateInput) {
+        continue; 
+      }
+      if(selectedGender != 'both' && array[i]['Event'] != event) {
+        continue; 
+      } 
+      if(!array[i]['Event'].includes(event)) {
+        continue; 
+      }
+      else {
+        newArray.push(array[i]); 
+      }
+  }
+  return newArray;
+}
+
+
+function timeToString(time) {
+  var minutes = 0; 
+  var seconds = 0; 
+  var milliseconds = 0; 
+  
+  //Get minutes if any
+  if (time / 60000 > 1) {
+    minutes = Math.floor(time / 60000);   
+  } 
+
+  //Subtract minutes, if minutes is 0 this does nothing
+  time = time - (60000*minutes); 
+  //Get seconds
+  seconds = Math.floor(time / 1000); 
+  //Subtract seconds from total time
+  time = time - (1000*seconds); 
+  //All time left over is milliseconds
+  milliseconds = time;
+
+
+  if(minutes > 0) { 
+    return `${minutes}:${seconds}.${milliseconds}`;
+  } else {
+    return `${seconds}.${milliseconds}`;
+  }
+
+}
+
+function dateToString(tick) {
+  var d = new Date(tick);
+  
+  //Convert 0 month to 12
+  var month = d.getMonth();  
+  if(month == 0) {
+    month = 12; 
+  }
+  
+  //Convert year 1999 => 99
+  var year = d.getFullYear(); 
+  var yearString = year.toString();
+  yearString = yearString.substring(2,4); 
+
+  //Gets rid of '0' days
+  var day = d.getDay(); 
+  var month30 = [4,6,9,11];
+  var month31 = [1,3,5,7,8,10,12];
+  
+  if(day == 0 && month == 2) {
+    day = 28; 
+  } 
+  else if (day == 0 && month30.includes(month)) {
+    day = 30; 
+  }
+  else if (day == 0 && month31.includes(month)) {
+    day = 31; 
+  }
+
+  return month + "/" + day + "/" + yearString; 
+}
+
+
+//Shows description of dots
+function showInfo (d, i) {
+  d3.select(this)
+  .style('fill', 'black')
+  d3.select('div.info')
+    .html(`<span class = "category"> Swimmer: </span>
+    <span class = "swimmer"> ${d.Athlete} </span><br>
+    <span class = "category"> Event: </span>
+    <span class = "swimmer"> ${d.Event} </span><br>
+    <span class = "category"> Swim Time: </span>
+    <span class = "swimmer"> ${d.Time} </span><br>
+    <span class = "category"> Country: </span>
+    <span class = "swimmer"> ${d.Country} </span><br>
+    <span class = "category"> Date:  </span>
+    <span class = "swimmer"> ${d.Date} </span><br>`)
+}
+
+function hideInfo (d, i) {
+    d3.select(this)
+    .style('fill', 'red')
+    d3.select('div.info')
+      .text("")
+}
+
+//Add graph to page
+var margins = {top: 50, right: 50, bottom: 50, left: 50}, 
+              width = 650 - margins.left - margins.right,
+              height = 650 - margins.top - margins.bottom; 
+
+var SVG = d3.select("#graph")
+            .append("svg")
+              .attr("width", width + margins.left + margins.right)
+              .attr("height", height + margins.top + margins.bottom)
+              .attr("background", "blue")
+            .append("g")
+              .attr("transform",
+              "translate(" + margins.left + "," + margins.top + ")");
+
+let dot = {
+  fill: 'red', 
+  radius: 5,
+  stroke_width: 1, 
+  opacity: 0.6
+}
+
+
+
+/*drawGraph() 
+ * 
+ * Uses d3 to add a 
+ * graph to the svg 
+ * in html.  
+ */
+function drawGraph(dataArray) { 
+  //Add zoom to graph
+  var zoom = d3.zoom()
+    .scaleExtent([0.5, 20])
+    .extent([[0, 0], [width, height]])
+    .on("zoom", updateChart); 
+
+
+  // This add an invisible rect on top of the chart area. This rect can recover pointer events: necessary to understand when the user zoom
+  SVG.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .attr('transform', 'translate(' + margins.left + ',' + margins.top + ')')
+    .call(zoom);
+
+  //Data for graph
+  let dates = dataArray.map(d => d.Date);
+  let times = dataArray.map(d => d.TotalTime);
+
+  //Scaling for axes
+  let dateXScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(dates))
+      .range([-dot.radius, width + dot.radius])
+
+  let timeYScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(times))
+      .range([height - dot.radius, dot.radius])
+
+  //Draw axes 
+  var xAxis = SVG.append("g")
+                 .attr("transform", "translate(0," + height + ")")
+                 .attr("class", "grid")
+                 .call(d3.axisBottom(dateXScale)
+                         .tickSize(-height)
+                         .tickFormat(dateToString)
+                         .ticks(5));
+  
+  var yAxis = SVG.append("g")
+                 .attr("class", "grid")
+                 .call(d3.axisLeft(timeYScale)
+                         .tickSize(-height)
+                         .tickFormat(timeToString));
+  
+  
+ var line = d3.line()
+              .x(function(d, i) { return dateXScale(i); })
+              .y(function(d) { return timeYScale(d.y); })
+              .curve(d3.curveMonotoneX)
+
+  //Don't get clip and plot
+  var clip = SVG.append("defs").append("SVG:clipPath")
+    .attr("id", "clip")
+    .append("SVG:rect")
+    .attr("width", width )
+    .attr("height", height )
+    .attr("x", 0)
+    .attr("y", 0);
+
+  var plot = SVG.append("g")
+                 .attr("clip-path", "url(#clip)");
+
+  //Plot graph
+  plot
+    .selectAll('circle')
+    .data(dataArray)
+    .enter()
+    .append('circle')
+    .attr('cx', d => dateXScale(d.Date))
+    .attr('cy', d => timeYScale( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo); 
+
+  
+  // A function that updates the chart when the user zoom and thus new boundaries are available
+  function updateChart() {
+
+    // recover the new scale
+    var newX = d3.event.transform.rescaleX(dateXScale);
+    var newY = d3.event.transform.rescaleY(timeYScale);
+
+    // update axes with these new boundaries
+    xAxis.call(d3.axisBottom(newX)
+                 .tickSize(-height)
+                 .tickFormat(dateToString));
+
+    yAxis.call(d3.axisLeft(newY)
+                 .tickSize(-height)
+                 .tickFormat(timeToString)); 
+
+    // update circle position
+    plot
+      .selectAll("circle")
+      .attr('cx', d => newX(d.Date))
+      .attr('cy', d => newY( + d.TotalTime))
+      .attr('fill', dot.fill)
+      .style('stroke-width', dot.stroke_width)
+      .style('opacity', dot.opacity)
+      .on('mouseover', showInfo)
+      .on('mouseout', hideInfo);
+  }
+  
+
+}
+
+
+/*graph()
+ * Connected to graph button. 
+ * 
+ */
+function graph() {
+  //delete old graph
+  SVG.selectAll('circle').remove();
+  SVG.selectAll('g').remove();
+  SVG.selectAll('text').remove();
+
+  getUserInput();  
+  let data = [];
+
+
+  if(distanceInput == "SCY") {
+    data = filterArray(SCY_Records); 
+  } 
+  else if(distanceInput == "SCM") {
+    data = filterArray(SCM_World_Records, event); 
+  } 
+  else if(distanceInput == "LCM") {
+    data = filterArray(LCM_World_Records, event); 
+  } 
+
+  drawGraph(data); 
+}

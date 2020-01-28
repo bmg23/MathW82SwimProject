@@ -18,26 +18,46 @@
         </div>
         
         <!---Graph Input Options-->
-        <div class = 'column'>
-            <p class="option">Gender</p>
-            <input type="radio" name="gender" value="male"> Male </input>
-            <input type="radio" name="gender" value="female"> Female </input>
-            <input type="radio" name="gender" value="female"> Both </input>
-            
-            <p class="option">Event</p>
-            <select multiple id="events"></select>
-            <p class="smallText">Use Ctrl+Click to select multiple events</p>
-            
-            <p class="option">Date</p>
-            <select multiple id="date"></select>
-            <p class="smallText">Use Ctrl+Click to select multiple dates</p>
+        <div class = 'columnLeft'>
+            <form>
+                <p class="option" value="male">Gender</p>
+                <input type="radio" name="gender" value="male"> Male </input>
+                <input type="radio" name="gender" value="female"> Female </input>
+                <input type="radio" name="gender" value="both"> Both </input>
+                
+                <p class="option">Event</p>
+                <select id="events"></select>
+                
+                <p class="option">Date</p>
+                <div class="slidecontainer">
+                    <input type="range" min="1956" max="2020" value="2020" class="slider" id="myRange">
+                    <p>Starting Year: <span id="demo"></span></p>
+                </div>
+
+
+                <p class="option">Distance</p>
+                <select id="distance">
+                    <option value="SCY">Short Course Yards</option>
+                    <option value="SCM">Short Course Meters</option>
+                    <option value="LCM">Long Course Meters</option>
+                </select>
+            </form>
+            <br>
+            <button onclick="graph()">Graph</button>
+
+            <br>
+            <button onclick="graph()">Reset</button>
+
+            <p class="description" id="description">
+                test
+            </p>
+
+
+
         </div>
 
+        <div class="graph" id="graph"></div>
 
-        <div class="graph">
-
-            <svg id="graph"></svg>
-        </div>
         <div class = "info"></div>    
     </body>
 

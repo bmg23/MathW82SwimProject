@@ -1,16 +1,34 @@
+ 
 /*Top of Page*/
 
 .header {
+  box-shadow: 0 4px 5px 0 rgba(0,0,0,.14), 0 1px 10px 0 rgba(0,0,0,.12), 0 2px 4px -1px rgba(0,0,0,.2);
+  position: relative;
+  z-index: 1000;
+  padding: 0 5px;
+  background-color: #fff;
   font-family: "Trebuchet MS", Helvetica, sans-serif;
-  background-color: #67D86D;
+  background-image: url("https://images.fineartamerica.com/images/artworkimages/mediumlarge/2/water-wave-pattern-of-swimming-pool-anddraw.jpg");
   padding: 16px;
   text-align: center;
   font-size: 16px;
+  height: 60px;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-align: center;
+  align-items: center;
+  height: 100%;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: black;
+  color: #004d4d;
 }
 
 .option {
   font-family: "Trebuchet MS", Helvetica, sans-serif;
-
+  font-size: 24px;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
+  color: #004d4d;
 }
 
 .smallText {
@@ -22,37 +40,112 @@
   float: left;
   padding: 20px;
   width: 50%; 
-  background-color: skyblue;
 }
 
-.column {
+.columnLeft {
+  background-color: crimson;
   float: left;
   width: 25%;
   padding: 10px;
-  height: 500px;
+  height: 100%;
 }
 
+.columnRight {
+  float: left;
+  width: 25%;
+  padding: 10px;
+  height: 100%;
+}
 /* Clear floats after the columns */
 .row:after {
   content: "";
   display: table;
   clear: both;
+  height: 100%;
 }
 
 .category {
   color: black;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 500;
 }
 
 .swimmer {
-  color: rgb(17, 71, 187);
+  color: #276251;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.grid .tick {
-  stroke: lightgrey;
-  opacity: 0.7;
+
+.axis {
+  font-size: 25px;
+  font-family: fantasy;
+  font-weight: 500;
 }
+
+
+.grid text {
+  fill: black;
+  stroke-width: 0.5px;
+  font-size: 12px;
+}
+
+.grid line {
+  stroke: #16A0CE;
+  opacity: 0.4;
+}
+
 .grid path {
-    stroke-width: 0;
+  stroke-width: 0;
+}
+
+
+.axis path {
+  display: none;
+}
+
+.axis line {
+  stroke-opacity: 1;
+  shape-rendering: crispEdges;
+}
+
+.view {
+  fill: url(#gradient);
+  stroke: #000;
+}
+
+
+
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 25px;
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: #4CAF50;
+  cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  background: #4CAF50;
+  cursor: pointer;
 }
