@@ -268,12 +268,6 @@ d3.csv("AllWorldRecords.csv").then( main );
 
 
 /******************************Script for graphing*******************************/
- 
-
-
-
-
-
 //Global user input variables 
 var selectedGender = 'Both'; 
 let genderInput = document.getElementsByName('gender'); 
@@ -302,86 +296,38 @@ function getUserInput() {
   distanceInput = document.getElementById("distance").value;  
 }
 
-//Shows description of dots
-function showInfo (d, i) {
-  d3.select(this)
-  .style('fill', 'black')
-  d3.select('div.info')
-    .html(`<span class = "category"> Swimmer: </span>
-    <span class = "swimmer"> ${d.Athlete} </span><br>
-    <span class = "category"> Event: </span>
-    <span class = "swimmer"> ${d.Event} </span><br>
-    <span class = "category"> Swim Time: </span>
-    <span class = "swimmer"> ${d.Time} </span><br>
-    <span class = "category"> Country: </span>
-    <span class = "swimmer"> ${d.Country} </span><br>
-    <span class = "category"> When was it broken?  </span>
-    <span class = "swimmer"> ${d.Date} </span><br>
-    <span class = "category"> Rank: </span>
-    <span class = "swimmer"> ${d.Rank} </span><br>`)
+//Used by graph function 
+function filterArray(array) {
+  //Set up event for filter
+  var event = "";  
+  if (selectedGender == 'male') {
+    event = "Men's " + eventInput + " " + distanceInput;  
+  } 
+  else if(selectedGender == 'female') {
+    event = "Women's " + eventInput + " " + distanceInput;  
+  } else {
+    event = eventInput + " " + distanceInput;
+  }
+ 
+  
+  let newArray = [];
+  for (i = 0; i < array.length; ++i) {
+      if(dateInput != "All Years" && array[i]['Date'].getFullYear() <= dateInput) {
+        continue; 
+      }
+      if(selectedGender != 'both' && array[i]['Event'] != event) {
+        continue; 
+      } 
+      if(!array[i]['Event'].includes(event)) {
+        continue; 
+      }
+      else {
+        newArray.push(array[i]); 
+      }
+  }
+  return newArray;
 }
 
-function hideInfo (d, i) {
-    d3.select(this)
-    .style('fill', 'red')
-    d3.select('div.info')
-      .text("")
-}
-
-
-function plotPoints(dataArray, dateXScale, timeYScale, graphInner, dot) {
-  graphInner
-    .selectAll('circle')
-    .data(dataArray)
-    .enter()
-    .append('circle')
-    .attr('cx', d => dateXScale(d.Date))
-    .attr('cy', d => timeYScale( + d.TotalTime))
-    .attr('r', dot.radius)
-    .attr('fill', dot.fill)
-    .style('stroke-width', dot.stroke_width)
-    .style('opacity', dot.opacity)
-    .on('mouseover', showInfo)
-    .on('mouseout', hideInfo);
-
-}
-
-function drawAxis(graphInner, graphOuter, xAxis, yAxis) {
-
-  // create axes
-  graphInner
-    .append('g')
-    .attr('transform', 'translate(' + 0 + ', ' + innerHeight + ')')
-    .attr('class', 'x-axis')
-    //.attr('transform', 'rotate(-90)')
-    .call(xAxis)
-
-  graphInner
-    .append('g')
-    .attr('class', 'y-axis')
-    .call(yAxis)
-
-  //X Axis Text
-  graphOuter
-    .append('text')
-    .attr('class', 'x-axis')
-    .attr('x', margins.left + innerWidth / 2)
-    .attr('y', outerHeight - margins.bottom / 4)
-    .attr('text-anchor', 'middle')
-    .text("Date")
-
-  //Y Axis Text
-  graphOuter
-    .append('text')
-    .attr('class', 'y axis')
-    .attr('x', margins.left / 2)
-    .attr('y', (margins.bottom + innerHeight) / 2 + 20)
-    .attr('text-anchor', 'middle')
-    .attr(
-      'transform',
-      `rotate(-90 ${margins.left / 2} ${margins.bottom + innerHeight / 2})`)
-    .text("Time")
-}
 
 function timeToString(time) {
   var minutes = 0; 
@@ -416,194 +362,34 @@ function dateToString(tick) {
   return d.getDay() + "/" + d.getMonth() + "/" + d.getFullYear(); 
 }
 
-/*drawGraph() 
- * 
- * Uses d3 to add a 
- * graph to the svg 
- * in html.  
- */
-function drawGraph(dataArray) { 
-  
- 
 
-  //Data for graph
-  let dates = dataArray.map(d => d.Date);
-  let times = dataArray.map(d => d.TotalTime);
+//Shows description of dots
+function showInfo (d, i) {
+  d3.select(this)
+  .style('fill', 'black')
+  d3.select('div.info')
+    .html(`<span class = "category"> Swimmer: </span>
+    <span class = "swimmer"> ${d.Athlete} </span><br>
+    <span class = "category"> Event: </span>
+    <span class = "swimmer"> ${d.Event} </span><br>
+    <span class = "category"> Swim Time: </span>
+    <span class = "swimmer"> ${d.Time} </span><br>
+    <span class = "category"> Country: </span>
+    <span class = "swimmer"> ${d.Country} </span><br>
+    <span class = "category"> Date:  </span>
+    <span class = "swimmer"> ${d.Date} </span><br>`)
+}
 
-  //Variables for dots
-  let dateXScale = 
-    d3.scaleLinear()
-      .domain(d3.extent(dates))
-      .range([0, innerWidth])
-
-  let timeYScale = 
-    d3.scaleLinear()
-      .domain(d3.extent(times))
-      .range([innerHeight - 5, 0])
-
-  //Variables for axis 
-  let graphOuter = d3
-    .select('svg#graph')
-    .attr('width', outerWidth)
-    .attr('height', outerHeight)
-    .style('background-color', 'skyblue')
-
-  let graphInner = graphOuter
-    .append('g')
-    .attr('width', innerWidth)
-    .attr('height', innerHeight)
-    .attr('transform', 'translate(' + margins.left + ',' + margins.right + ')')
-
-  let xAxis = d3.axisTop(dateXScale)
-                .tickSize(-innerHeight)
-                .tickFormat(dateToString); 
-
-  let yAxis = d3.axisLeft(timeYScale)
-                .tickSize(-innerWidth)
-                .tickFormat(timeToString);
-
-
-  
-  //Zoom
-  var svg = d3.select("svg#graph");
-
-
-  var zoom = d3.zoom()
-    .scaleExtent([1, 40])
-    .translateExtent([[-100, -100], [innerWidth + 100, innerHeight + 100]])
-    .on("zoom", zoomed);
-
-  var view = graphInner; 
-
-  var gX = svg.append("g")
-      .attr("class", "axis")
-      .call(xAxis);
-
-  var gY = svg.append("g")
-      .attr("class", "axis")
-      .call(yAxis);
-
-  var x = d3.scaleLinear()
-    .domain([-50, innerWidth + 5])
-    .range([-50, innerWidth + 5]);
-  
-  var y = d3.scaleLinear()
-      .domain([-50, innerHeight + 1])
-      .range([-50, innerHeight + 1]);
-
-
-  function zoomed() {
-    view.attr("transform", d3.event.transform);
-    gY.call(xAxis.scale(d3.event.transform.rescaleX(x)));
-    gX.call(yAxis.scale(d3.event.transform.rescaleY(y)));
-  }
-
-  function resetted() {
-    svg.transition()
-        .duration(750)
-        .call(zoom.transform, d3.zoomIdentity);
-  }
-
-
-  let dot = {
-    fill: 'red', 
-    radius: 3,
-    stroke_width: 1, 
-    opacity: 0.6
-  }
-  
-  
-  plotPoints(dataArray, dateXScale, timeYScale, graphInner, dot) 
-  //drawAxis(graphInner, graphOuter, xAxis, yAxis); 
-  svg.call(zoom);
+function hideInfo (d, i) {
+    d3.select(this)
+    .style('fill', 'red')
+    d3.select('div.info')
+      .text("")
 }
 
 
-
-//Used by graph function 
-function filterArray(array) {
-  
-  //Set up event for filter
-  var event = "";  
-  if (selectedGender == 'male') {
-    event = "Men's " + eventInput + " " + distanceInput;  
-  } 
-  else if(selectedGender == 'female') {
-    event = "Women's " + eventInput + " " + distanceInput;  
-  } else {
-    event = eventInput + " " + distanceInput;
-  }
-
-  console.log("Filter Event: " + selectedGender); 
-  
-  let newArray = [];
-  for (i = 0; i < array.length; ++i) {
-      if(dateInput != "All Years" && array[i]['Date'].getFullYear() <= dateInput) {
-        continue; 
-      }
-      if(selectedGender != 'both' && array[i]['Event'] != event) {
-        continue; 
-      } 
-      if(!array[i]['Event'].includes(event)) {
-        continue; 
-      }
-      else {
-        newArray.push(array[i]); 
-      }
-  }
-  return newArray;
-}
-function drawGraph2(dataArray) {
-  // set the dimensions and margins of the graph
-  var margin = {top: 10, right: 30, bottom: 30, left: 60},
-   width = 460 - margin.left - margin.right,
-   height = 400 - margin.top - margin.bottom;
-
-  // append the SVG object to the body of the page
-  var SVG = d3.select("#graph")
-  .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-    .attr("transform",
-          "translate(" + margin.left + "," + margin.top + ")");
-
-  // Add X axis
-  var x = d3.scaleLinear()
-    .domain([4, 8])
-    .range([ 0, width ]);
-  var xAxis = SVG.append("g")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x));
-
-  // Add Y axis
-  var y = d3.scaleLinear()
-    .domain([0, 9])
-    .range([ height, 0]);
-  var yAxis = SVG.append("g")
-    .call(d3.axisLeft(y));
-
-  // Add a clipPath: everything out of this area won't be drawn.
-  var clip = SVG.append("defs").append("SVG:clipPath")
-    .attr("id", "clip")
-    .append("SVG:rect")
-    .attr("width", width )
-    .attr("height", height )
-    .attr("x", 0)
-    .attr("y", 0);
-
-  var plot = SVG.append("g")
-                .attr("clip-path", "url(#clip)")
-
-  let dot = {
-    fill: 'red', 
-    radius: 3,
-    stroke_width: 1, 
-    opacity: 0.6
-  }
-  
-  
-  plot
+function plotPoints(dataArray, dateXScale, timeYScale, graphInner, dot) {
+  graphInner
     .selectAll('circle')
     .data(dataArray)
     .enter()
@@ -617,17 +403,147 @@ function drawGraph2(dataArray) {
     .on('mouseover', showInfo)
     .on('mouseout', hideInfo);
 
+}
 
-  // Set the zoom and Pan features: how much you can zoom, on which part, and what to do when there is a zoom
+
+//Add graph to page
+var margins = {top: 50, right: 50, bottom: 50, left: 50}, 
+              width = 650 - margins.left - margins.right,
+              height = 650 - margins.top - margins.bottom; 
+
+var SVG = d3.select("#graph")
+            .append("svg")
+              .attr("width", width + margins.left + margins.right)
+              .attr("height", height + margins.top + margins.bottom)
+              .attr("background", "blue")
+            .append("g")
+              .attr("transform",
+              "translate(" + margins.left + "," + margins.top + ")");
+
+let dot = {
+  fill: 'red', 
+  radius: 5,
+  stroke_width: 1, 
+  opacity: 0.6
+}
+
+
+
+/*drawGraph() 
+ * 
+ * Uses d3 to add a 
+ * graph to the svg 
+ * in html.  
+ */
+function drawGraph(dataArray) { 
+  //Add zoom to graph
   var zoom = d3.zoom()
-      .scaleExtent([.5, 20])  // This control how much you can unzoom (x0.5) and zoom (x20)
-      .extent([[0, 0], [width, height]])
-      .on("zoom", updateChart);
+    .scaleExtent([0.5, 20])
+    .extent([[0, 0], [width, height]])
+    .on("zoom", updateChart); 
 
 
+  // This add an invisible rect on top of the chart area. This rect can recover pointer events: necessary to understand when the user zoom
+  SVG.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .attr('transform', 'translate(' + margins.left + ',' + margins.top + ')')
+    .call(zoom);
 
+  //Data for graph
+  let dates = dataArray.map(d => d.Date);
+  let times = dataArray.map(d => d.TotalTime);
+
+  //Scaling for axes
+  let dateXScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(dates))
+      .range([0, innerWidth])
+
+  let timeYScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(times))
+      .range([innerHeight, 0])
+
+  //Draw axes 
+  var xAxis = SVG.append("g")
+                 .attr("transform", "translate(0," + height + ")")
+                 .call(d3.axisBottom(dateXScale)
+                         .tickSize(-height)
+                         .tickFormat(dateToString));
+  
+  var yAxis = SVG.append("g")
+                 .call(d3.axisLeft(timeYScale)
+                         .tickSize(-height)
+                         .tickFormat(timeToString));
+
+  
+ var line = d3.line()
+              .x(function(d, i) { return dateXScale(i); })
+              .y(function(d) { return timeYScale(d.y); })
+              .curve(d3.curveMonotoneX)
+
+  //Don't get clip and plot
+  var clip = SVG.append("defs").append("SVG:clipPath")
+    .attr("id", "clip")
+    .append("SVG:rect")
+    .attr("width", width )
+    .attr("height", height )
+    .attr("x", 0)
+    .attr("y", 0);
+
+  var plot = SVG.append("g")
+                 .attr("clip-path", "url(#clip)");
+
+  //Plot graph
+  plot
+    .selectAll('circle')
+    .data(dataArray)
+    .enter()
+    .append('circle')
+    .attr('cx', d => dateXScale(d.Date))
+    .attr('cy', d => timeYScale( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo); 
+
+  
+  // A function that updates the chart when the user zoom and thus new boundaries are available
+  function updateChart() {
+
+    // recover the new scale
+    var newX = d3.event.transform.rescaleX(dateXScale);
+    var newY = d3.event.transform.rescaleY(timeYScale);
+
+    // update axes with these new boundaries
+    xAxis.call(d3.axisBottom(newX)
+                 .tickSize(-height)
+                 .tickFormat(dateToString));
+
+    yAxis.call(d3.axisLeft(newY)
+                 .tickSize(-height)
+                 .tickFormat(timeToString)); 
+
+    // update circle position
+    plot
+      .selectAll("circle")
+      .attr('cx', d => newX(d.Date))
+      .attr('cy', d => newY( + d.TotalTime))
+      .attr('fill', dot.fill)
+      .style('stroke-width', dot.stroke_width)
+      .style('opacity', dot.opacity)
+      .on('mouseover', showInfo)
+      .on('mouseout', hideInfo);
+  }
+  
 
 }
+
 
 /*graph()
  * Connected to graph button. 
@@ -635,15 +551,9 @@ function drawGraph2(dataArray) {
  */
 function graph() {
   //delete old graph
-  d3.select('svg#graph')
-    .selectAll('circle')
-    .remove();
-  d3.select('svg#graph')
-  .selectAll('g')
-  .remove();
-  d3.select('svg#graph')
-  .selectAll('text')
-  .remove();
+  SVG.selectAll('circle').remove();
+  SVG.selectAll('g').remove();
+  SVG.selectAll('text').remove();
 
   getUserInput();  
   let data = [];
@@ -656,12 +566,10 @@ function graph() {
     data = filterArray(SCM_World_Records, event); 
   } 
   else if(distanceInput == "LCM") {
-    console.log("Filtering Array"); 
-
     data = filterArray(LCM_World_Records, event); 
   } 
-  console.log(data); 
-  drawGraph2(data); 
+
+  drawGraph(data); 
 }
 
 

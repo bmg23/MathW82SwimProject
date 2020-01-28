@@ -8,7 +8,7 @@
   padding: 0 5px;
   background-color: #fff;
   font-family: "Trebuchet MS", Helvetica, sans-serif;
-  background-color: #67D86D;
+  background-image: url("https://images.fineartamerica.com/images/artworkimages/mediumlarge/2/water-wave-pattern-of-swimming-pool-anddraw.jpg");
   padding: 16px;
   text-align: center;
   font-size: 16px;
@@ -17,11 +17,18 @@
   display: flex;
   -ms-flex-align: center;
   align-items: center;
+  height: 100%;
+  -webkit-text-stroke-width: 2px;
+  -webkit-text-stroke-color: black;
+  color: #004d4d;
 }
 
 .option {
   font-family: "Trebuchet MS", Helvetica, sans-serif;
-
+  font-size: 24px;
+  -webkit-text-stroke-width: 1px;
+  -webkit-text-stroke-color: black;
+  color: #004d4d;
 }
 
 .smallText {
@@ -35,29 +42,39 @@
   width: 50%; 
 }
 
-.column {
+.columnLeft {
+  background-color: crimson;
   float: left;
   width: 25%;
   padding: 10px;
-  height: 500px;
+  height: 100%;
 }
 
+.columnRight {
+  float: left;
+  width: 25%;
+  padding: 10px;
+  height: 100%;
+}
 /* Clear floats after the columns */
 .row:after {
   content: "";
   display: table;
   clear: both;
+  height: 100%;
 }
 
 .category {
   color: black;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-weight: 500;
 }
 
 .swimmer {
-  color: rgb(17, 71, 187);
+  color: #276251;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
+
 
 .grid .tick {
   stroke: lightgrey;
