@@ -284,7 +284,6 @@ function graph() {
     .select('svg#graph')
     .attr('width', outerWidth)
     .attr('height', outerHeight)
-    .style('background-color', 'skyblue')
 
   let graphInner = graphOuter
     .append('g')
@@ -298,37 +297,17 @@ function graph() {
       .domain(d3.extent(swim50FrMensDates))
       .range([0, innerWidth])
 
-  let xAxis = d3.axisBottom(dateXScale).tickSize(-innerHeight)
+  let xAxis = d3.axisBottom(dateXScale)
+                .tickSize(-innerHeight)
+                .ticks(5)
+                
+  let timeYScale = d3.scaleLinear()
+                     .domain(d3.extent(swim50FreeMensTimes))
+                     .range([innerHeight, 0])
 
-
-  let timeYScale = 
-    d3.scaleLinear()
-      .domain(d3.extent(swim50FreeMensTimes))
-      .range([innerHeight, 0])
-
-  let yAxis = d3.axisLeft(timeYScale).tickSize(-innerHeight)
-
-
-
-  /*  Curved lines
-      Need to add another array
-      var points = [
-        [Date1, Time1],
-        [Date2, Time2]
-      ]
-  */ 
-
-
-
-  /*
-  var lineGenerator = d3.line()
-  .curve(d3.curveCardinal); 
-
-  var pathData = lineGenerator(swim50FreeMens);
-
-  d3.select('path')
-    .attr('d', pathData)
-  */
+  let yAxis = d3.axisLeft(timeYScale)
+                .tickSize(-innerHeight)
+                .ticks(5)
 
  var line = d3.line()
               .x(function(d, i) { return dateXScale(i); })
@@ -342,14 +321,12 @@ function graph() {
     .append('circle')
     .attr('cx', d => dateXScale(d.Date))
     .attr('cy', d => timeYScale( + d.TotalTime))
-    .attr('r', 7)
-    .attr('fill', 'red')
+    .attr('r', 4)
+    .attr('fill', 'green')
     .style('stroke-width', 5)
     .style('opacity', 0.6)
     .on('mouseover', showInfo)
     .on('mouseout', hideInfo)
-
-  
 
     function showInfo (d, i) {
       d3.select(this)
@@ -370,88 +347,55 @@ function graph() {
 
     function hideInfo (d, i) {
         d3.select(this)
-          .style('fill', 'red')
+          .style('fill', 'violet')
         d3.select('div.info')
           .text("")
       }
-
-
-  
-
     // create axes
     graphInner
       .append('g')
       .attr('transform', 'translate(' + 0 + ', ' + innerHeight + ')')
-      .attr('class', 'x-axis')
-      //.attr('transform', 'rotate(-90)')
       .call(xAxis)
+      .attr('class', 'grid')
 
     graphInner
       .append('g')
-      .attr('class', 'y-axis')
       .call(yAxis)
+      .attr('class', 'grid')
 
     graphOuter
       .append('text')
-      .attr('class', 'x-axis')
       .attr('x', margins.left + innerWidth / 2)
       .attr('y', outerHeight - margins.bottom / 4)
       .attr('text-anchor', 'middle')
-      .text("Date: Earliest to Most Recent")
+      .text("Date")
+      .attr('class', 'axis')
   
     graphOuter
       .append('text')
-      .attr('class', 'y axis')
       .attr('x', margins.left / 2)
       .attr('y', (margins.bottom + innerHeight) / 2 + 20)
       .attr('text-anchor', 'middle')
       .attr(
         'transform',
         `rotate(-90 ${margins.left / 2} ${margins.bottom + innerHeight / 2})`)
-      .text("Swim Time")
+      .text("Time")
+      .attr('class', 'axis')
 
-
-
-
-
-    /*
-    function xAxisScale() {        
-        return d3.select('svg#graph')
-             .axis()
-             .scale(x)
-             .orient("bottom")
-             .ticks(5)
-    }
-    
-    function yAxisScale() {        
-        return d3.select('svg#graph')
-            .axis()
-            .scale(y)
-            .orient("left")
-            .ticks(5)
-    }
-
-    d3.select('svg#graph')
-      .append("g")         
-      .attr("class", "grid")
-      .attr("transform", "translate(0," + innerHeight + ")")
-      .call(yAxisScale()
-            .tickSize(-innerHeight, 0, 0)
-            .tickFormat("")
-    )
-
-    d3.select('svg#graph')
-      .append("g")         
-      .attr("class", "grid")
-      .call(xAxisScale()
-            .tickSize(-innerWidth, 0, 0)
-            .tickFormat("")
-    )
-
-*/
 
 
 }
+
+
+  /*
+  var lineGenerator = d3.line()
+  .curve(d3.curveCardinal); 
+
+  var pathData = lineGenerator(swim50FreeMens);
+
+  d3.select('path')
+    .attr('d', pathData)
+  */
 
 
 
