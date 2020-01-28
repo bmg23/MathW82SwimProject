@@ -16,23 +16,35 @@
         <div class="header">
             <h1>Swim Time Progression</h1>
         </div>
-        
-        <!---Graph Input Options-->
-        <div class = 'column'>
-            <p class="option">Gender</p>
-            <input type="radio" name="gender" value="male"> Male </input>
-            <input type="radio" name="gender" value="female"> Female </input>
-            <input type="radio" name="gender" value="female"> Both </input>
-            
-            <p class="option">Event</p>
-            <select multiple id="events"></select>
-            <p class="smallText">Use Ctrl+Click to select multiple events</p>
-            
-            <p class="option">Date</p>
-            <select multiple id="date"></select>
-            <p class="smallText">Use Ctrl+Click to select multiple dates</p>
+        <div>
+            <form>
+                <!---Graph Input Options-->
+                <p class="option">Gender</p>
+                <input type="radio" name="gender" value="male"> Male<br>
+                <input type="radio" name="gender" value="female"> Female<br>
+                <input type="radio" name="gender" value="both"> Both
+                
+                <p class="option">Event</p>
+                <select id="events"></select>
+                
+                <p class="option">Distance</p>
+                <select id="distance">
+                    <option value="SCY">Short Course Yards</option>
+                    <option value="SCM">Short Course Meters</option>
+                    <option value="LCM">Long Course Meters</option>
+                </select>
+
+
+
+                <p class="option">Date</p>
+                <select id="date"></select>
+                <p class="smallText">Select the starting year</p>
+            </form>
         </div>
 
+        <div>
+            <button class="graphButton" onclick="graph()">Graph</button>
+        </div>
 
         <div class="graph">
 
