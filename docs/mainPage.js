@@ -28,30 +28,14 @@ for (const event in events) {
   eventSelect.add(newEventOption); 
 }
 
-//Dates
-//Probably going to change to 1,5,10,all 
-dates = [];
+//Date Slider
+var slider = document.getElementById("myRange");
+var output = document.getElementById("demo");
+output.innerHTML = slider.value;
 
-var oldestRecord = 1956; 
-var currentYear = new Date().getFullYear(); 
-
-for (i = oldestRecord; i <= currentYear; ++i) {
-  dates.unshift(i); 
+slider.oninput = function() {
+  output.innerHTML = this.value;
 }
-
-dates.unshift("All Years"); 
-
-var dateSelect = document.getElementById('date');
-
-for (const date in dates) {
-  var newDateOption = document.createElement("option");
-  newDateOption.text = `${dates[date]}`;
-  newDateOption.value = `${dates[date]}`;
-  dateSelect.add(newDateOption); 
-}
-
-
-
 
 
 /******************************Data needed for creating records*******************************/
@@ -271,8 +255,8 @@ d3.csv("AllWorldRecords.csv").then( main );
 //Global user input variables 
 var selectedGender = 'Both'; 
 let genderInput = document.getElementsByName('gender'); 
+var dateInput = slider.value; 
 var eventInput = ['50 Free']; 
-var dateInput = 'All Years';
 var distanceInput = 'LCM'; 
 
 /*getUserInput()
@@ -292,7 +276,8 @@ function getUserInput() {
   
   
   eventInput = document.getElementById("events").value; 
-  dateInput = document.getElementById("date").value;
+  dateInput = slider.value; 
+  console.log(dateInput); 
   distanceInput = document.getElementById("distance").value;  
 }
 
@@ -312,7 +297,7 @@ function filterArray(array) {
   
   let newArray = [];
   for (i = 0; i < array.length; ++i) {
-      if(dateInput != "All Years" && array[i]['Date'].getFullYear() <= dateInput) {
+      if(array[i]['Date'].getFullYear() > dateInput) {
         continue; 
       }
       if(selectedGender != 'both' && array[i]['Event'] != event) {
@@ -358,8 +343,35 @@ function timeToString(time) {
 }
 
 function dateToString(tick) {
-  var d = new Date(tick);  
-  return d.getDay() + "/" + d.getMonth() + "/" + d.getFullYear(); 
+  var d = new Date(tick);
+  
+  //Convert 0 month to 12
+  var month = d.getMonth();  
+  if(month == 0) {
+    month = 12; 
+  }
+  
+  //Convert year 1999 => 99
+  var year = d.getFullYear(); 
+  var yearString = year.toString();
+  yearString = yearString.substring(2,4); 
+
+  //Gets rid of '0' days
+  var day = d.getDay(); 
+  var month30 = [4,6,9,11];
+  var month31 = [1,3,5,7,8,10,12];
+  
+  if(day == 0 && month == 2) {
+    day = 28; 
+  } 
+  else if (day == 0 && month30.includes(month)) {
+    day = 30; 
+  }
+  else if (day == 0 && month31.includes(month)) {
+    day = 31; 
+  }
+
+  return month + "/" + day + "/" + yearString; 
 }
 
 
@@ -386,25 +398,6 @@ function hideInfo (d, i) {
     d3.select('div.info')
       .text("")
 }
-
-
-function plotPoints(dataArray, dateXScale, timeYScale, graphInner, dot) {
-  graphInner
-    .selectAll('circle')
-    .data(dataArray)
-    .enter()
-    .append('circle')
-    .attr('cx', d => dateXScale(d.Date))
-    .attr('cy', d => timeYScale( + d.TotalTime))
-    .attr('r', dot.radius)
-    .attr('fill', dot.fill)
-    .style('stroke-width', dot.stroke_width)
-    .style('opacity', dot.opacity)
-    .on('mouseover', showInfo)
-    .on('mouseout', hideInfo);
-
-}
-
 
 //Add graph to page
 var margins = {top: 50, right: 50, bottom: 50, left: 50}, 
@@ -460,25 +453,28 @@ function drawGraph(dataArray) {
   let dateXScale = 
     d3.scaleLinear()
       .domain(d3.extent(dates))
-      .range([0, innerWidth])
+      .range([-dot.radius, width + dot.radius])
 
   let timeYScale = 
     d3.scaleLinear()
       .domain(d3.extent(times))
-      .range([innerHeight, 0])
+      .range([height - dot.radius, dot.radius])
 
   //Draw axes 
   var xAxis = SVG.append("g")
                  .attr("transform", "translate(0," + height + ")")
+                 .attr("class", "grid")
                  .call(d3.axisBottom(dateXScale)
                          .tickSize(-height)
-                         .tickFormat(dateToString));
+                         .tickFormat(dateToString)
+                         .ticks(5));
   
   var yAxis = SVG.append("g")
+                 .attr("class", "grid")
                  .call(d3.axisLeft(timeYScale)
                          .tickSize(-height)
                          .tickFormat(timeToString));
-
+  
   
  var line = d3.line()
               .x(function(d, i) { return dateXScale(i); })
@@ -571,9 +567,3 @@ function graph() {
 
   drawGraph(data); 
 }
-
-
-
-
-
- 
