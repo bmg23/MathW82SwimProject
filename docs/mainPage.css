@@ -159,12 +159,8 @@
   cursor: pointer;
 }
 
-button {
-  width: 60px;
-  text-align: center;
+.line {
+  fill: none;
+  stroke: #ffab00;
+  stroke-width: 3;
 }
-
-/*
-  background: #4CAF50;
-
-*/

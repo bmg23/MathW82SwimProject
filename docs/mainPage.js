@@ -277,7 +277,6 @@ function getUserInput() {
   
   eventInput = document.getElementById("events").value; 
   dateInput = slider.value; 
-  console.log(dateInput); 
   distanceInput = document.getElementById("distance").value;  
 }
 
@@ -417,7 +416,7 @@ let dot = {
   fill: 'red', 
   radius: 5,
   stroke_width: 1, 
-  opacity: 0.6
+  opacity: 1
 }
 
 
@@ -474,13 +473,8 @@ function drawGraph(dataArray) {
                  .call(d3.axisLeft(timeYScale)
                          .tickSize(-height)
                          .tickFormat(timeToString));
-  
-  
- var line = d3.line()
-              .x(function(d, i) { return dateXScale(i); })
-              .y(function(d) { return timeYScale(d.y); })
-              .curve(d3.curveMonotoneX)
 
+  
   //Don't get clip and plot
   var clip = SVG.append("defs").append("SVG:clipPath")
     .attr("id", "clip")
@@ -489,26 +483,41 @@ function drawGraph(dataArray) {
     .attr("height", height )
     .attr("x", 0)
     .attr("y", 0);
-
+  
+  
+  var line = SVG.append("path")
+                .attr("clip-path", "url(#clip)");;
   var plot = SVG.append("g")
                  .attr("clip-path", "url(#clip)");
+   
+ 
+  // Add the line
+  line.datum(dataArray)
+    .attr("fill", "none")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+      .x(function(d) { return dateXScale(d.Date) })
+      .y(function(d) { return timeYScale(d.TotalTime) })
+      ); 
 
   //Plot graph
   plot
-    .selectAll('circle')
-    .data(dataArray)
-    .enter()
-    .append('circle')
-    .attr('cx', d => dateXScale(d.Date))
-    .attr('cy', d => timeYScale( + d.TotalTime))
-    .attr('r', dot.radius)
-    .attr('fill', dot.fill)
-    .style('stroke-width', dot.stroke_width)
-    .style('opacity', dot.opacity)
-    .on('mouseover', showInfo)
-    .on('mouseout', hideInfo); 
+   .selectAll('circle')
+   .data(dataArray)
+   .enter()
+   .append('circle')
+   .attr('cx', d => dateXScale(d.Date))
+   .attr('cy', d => timeYScale( + d.TotalTime))
+   .attr('r', dot.radius)
+   .attr('fill', dot.fill)
+   .style('stroke-width', dot.stroke_width)
+   .style('opacity', dot.opacity)
+   .on('mouseover', showInfo)
+   .on('mouseout', hideInfo); 
 
   
+
   // A function that updates the chart when the user zoom and thus new boundaries are available
   function updateChart() {
 
@@ -525,16 +534,215 @@ function drawGraph(dataArray) {
                  .tickSize(-height)
                  .tickFormat(timeToString)); 
 
+    line
+        .attr("fill", "none")
+        .attr("stroke", "black")
+        .attr("stroke-width", 1.5)
+        .attr("d", d3.line()
+          .x(function(d) { return newX(d.Date) })
+          .y(function(d) { return newY(d.TotalTime) })
+          ); 
+    
     // update circle position
     plot
-      .selectAll("circle")
+        .selectAll("circle")
+        .attr('cx', d => newX(d.Date))
+        .attr('cy', d => newY( + d.TotalTime))
+        .attr('fill', dot.fill)
+        .style('stroke-width', dot.stroke_width)
+        .style('opacity', dot.opacity)
+        .on('mouseover', showInfo)
+        .on('mouseout', hideInfo);
+  }
+  
+
+}
+
+
+/*drawGraph() 
+ * 
+ * Uses d3 to add a 
+ * graph to the svg 
+ * in html.  
+ */
+function drawGraphBoth(dataArray, dataMale, dataFemale) { 
+  //Add zoom to graph
+  var zoom = d3.zoom()
+    .scaleExtent([0.5, 20])
+    .extent([[0, 0], [width, height]])
+    .on("zoom", updateChart); 
+
+
+  // This add an invisible rect on top of the chart area. This rect can recover pointer events: necessary to understand when the user zoom
+  SVG.append("rect")
+    .attr("width", width)
+    .attr("height", height)
+    .style("fill", "none")
+    .style("pointer-events", "all")
+    .attr('transform', 'translate(' + margins.left + ',' + margins.top + ')')
+    .call(zoom);
+
+  //Data for graph
+  let dates = dataArray.map(d => d.Date);
+  let times = dataArray.map(d => d.TotalTime);
+
+  //Scaling for axes
+  let dateXScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(dates))
+      .range([-dot.radius, width + dot.radius])
+
+  let timeYScale = 
+    d3.scaleLinear()
+      .domain(d3.extent(times))
+      .range([height - dot.radius, dot.radius])
+
+  //Draw axes 
+  var xAxis = SVG.append("g")
+                 .attr("transform", "translate(0," + height + ")")
+                 .attr("class", "grid")
+                 .call(d3.axisBottom(dateXScale)
+                         .tickSize(-height)
+                         .tickFormat(dateToString)
+                         .ticks(5));
+  
+  var yAxis = SVG.append("g")
+                 .attr("class", "grid")
+                 .call(d3.axisLeft(timeYScale)
+                         .tickSize(-height)
+                         .tickFormat(timeToString));
+
+  
+  //Don't get clip and plot
+  var clip = SVG.append("defs").append("SVG:clipPath")
+    .attr("id", "clip")
+    .append("SVG:rect")
+    .attr("width", width )
+    .attr("height", height )
+    .attr("x", 0)
+    .attr("y", 0);
+  
+  
+  var lineMale = SVG.append("path")
+                .attr("clip-path", "url(#clip)");
+  var plotMale = SVG.append("g")
+                 .attr("clip-path", "url(#clip)");
+  
+  var lineFemale = SVG.append("path")
+                .attr("clip-path", "url(#clip)");
+  var plotFemale = SVG.append("g")
+                  .attr("clip-path", "url(#clip)");
+ 
+  // Add the line
+  lineMale.datum(dataMale)
+    .attr("fill", "none")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+      .x(function(d) { return dateXScale(d.Date) })
+      .y(function(d) { return timeYScale(d.TotalTime) })
+      ); 
+
+  //Plot graph
+  plotMale
+   .selectAll('circle')
+   .data(dataMale)
+   .enter()
+   .append('circle')
+   .attr('cx', d => dateXScale(d.Date))
+   .attr('cy', d => timeYScale( + d.TotalTime))
+   .attr('r', dot.radius)
+   .attr('fill', dot.fill)
+   .style('stroke-width', dot.stroke_width)
+   .style('opacity', dot.opacity)
+   .on('mouseover', showInfo)
+   .on('mouseout', hideInfo); 
+
+  
+  // Add the line
+  lineFemale.datum(dataFemale)
+  .attr("fill", "none")
+  .attr("stroke", "black")
+  .attr("stroke-width", 1.5)
+  .attr("d", d3.line()
+    .x(function(d) { return dateXScale(d.Date) })
+    .y(function(d) { return timeYScale(d.TotalTime) })
+    ); 
+
+  //Plot graph
+  plotFemale
+    .selectAll('circle')
+    .data(dataFemale)
+    .enter()
+    .append('circle')
+    .attr('cx', d => dateXScale(d.Date))
+    .attr('cy', d => timeYScale( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo); 
+
+  // A function that updates the chart when the user zoom and thus new boundaries are available
+  function updateChart() {
+
+    // recover the new scale
+    var newX = d3.event.transform.rescaleX(dateXScale);
+    var newY = d3.event.transform.rescaleY(timeYScale);
+
+    // update axes with these new boundaries
+    xAxis.call(d3.axisBottom(newX)
+                 .tickSize(-height)
+                 .tickFormat(dateToString));
+
+    yAxis.call(d3.axisLeft(newY)
+                 .tickSize(-height)
+                 .tickFormat(timeToString)); 
+    // Add the line
+    lineMale.datum(dataMale)
+      .attr("fill", "none")
+      .attr("stroke", "black")
+      .attr("stroke-width", 1.5)
+      .attr("d", d3.line()
+        .x(function(d) { return newX(d.Date) })
+        .y(function(d) { return newY(d.TotalTime) })
+        ); 
+
+    //Plot graph
+    plotMale
+    .selectAll('circle')
+    .attr('cx', d => newX(d.Date))
+    .attr('cy', d => newY( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo); 
+
+    
+    // Add the line
+    lineFemale.datum(dataFemale)
+    .attr("fill", "none")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+      .x(function(d) { return newX(d.Date) })
+      .y(function(d) { return newY(d.TotalTime) })
+      ); 
+
+    //Plot graph
+    plotFemale
+      .selectAll('circle')
       .attr('cx', d => newX(d.Date))
       .attr('cy', d => newY( + d.TotalTime))
+      .attr('r', dot.radius)
       .attr('fill', dot.fill)
       .style('stroke-width', dot.stroke_width)
       .style('opacity', dot.opacity)
       .on('mouseover', showInfo)
-      .on('mouseout', hideInfo);
+      .on('mouseout', hideInfo); 
   }
   
 
@@ -550,10 +758,10 @@ function graph() {
   SVG.selectAll('circle').remove();
   SVG.selectAll('g').remove();
   SVG.selectAll('text').remove();
+  SVG.selectAll('path').remove(); 
 
   getUserInput();  
   let data = [];
-
 
   if(distanceInput == "SCY") {
     data = filterArray(SCY_Records); 
@@ -565,5 +773,17 @@ function graph() {
     data = filterArray(LCM_World_Records, event); 
   } 
 
-  drawGraph(data); 
+  if(selectedGender == 'both') {
+    selectedGender = 'male'; 
+    let dataMale = filterArray(data); 
+
+    selectedGender = 'female'; 
+    let dataFemale = filterArray(data); 
+
+    drawGraphBoth(data, dataMale, dataFemale); 
+  } else {
+    drawGraph(data); 
+  }
+
+  
 }
