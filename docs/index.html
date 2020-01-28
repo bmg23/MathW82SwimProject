@@ -21,19 +21,23 @@
         <div class = 'columnLeft'>
             <form>
                 <p class="option" value="male">Gender</p>
-                <input type="radio" name="gender" value="male"> Male </input>
-                <input type="radio" name="gender" value="female"> Female </input>
-                <input type="radio" name="gender" value="both"> Both </input>
-                
+                <input type="radio" name="gender" value="male" class = "description"> Male </input>
+                <input type="radio" name="gender" value="female" class = "description"> Female </input>
+                <input type="radio" name="gender" value="both" class = "description"> Both </input>
+                <br>
+                <br>
+
                 <p class="option">Event</p>
                 <select id="events"></select>
-                
+                <br>
+                <br>
+
                 <p class="option">Date</p>
                 <div class="slidecontainer">
                     <input type="range" min="1956" max="2020" value="2020" class="slider" id="myRange">
-                    <p>Starting Year: <span id="demo"></span></p>
+                    <p class = "description">Starting Year: <span id="demo"></span></p>
                 </div>
-
+                <br>
 
                 <p class="option">Distance</p>
                 <select id="distance">
@@ -43,8 +47,12 @@
                 </select>
             </form>
             <br>
-            <button onclick="graph()">Graph</button>
+            <br>
+            <br>
 
+            <button onclick="graph()">Graph</button>
+        
+            <br>
             <br>
             <button onclick="graph()">Reset</button>
 
