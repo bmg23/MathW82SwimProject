@@ -275,6 +275,7 @@ d3.csv("AllWorldRecords.csv").then( mainLCM );
 d3.csv("NCAAD1RecordProgressions.csv").then( mainSCY ); 
 d3.csv("RecordProgressionSCM.csv").then( mainSCM ); 
 
+console.log(SCM_World_Records);
 
 
 
@@ -499,7 +500,20 @@ function drawLine(dataArray, line, xScale, yScale) {
  * in html.  
  */
 function drawGraph(dataArray) { 
-  var text = document.createTextNode(dataArray[0]["Event"]);
+  var event = "";  
+  if(dataArray.length == 0) {
+    event = "No data."
+  }
+  if (selectedGender == 'male') {
+    event = "Men's " + eventInput + " " + distanceInput;  
+  } 
+  else if(selectedGender == 'female') {
+    event = "Women's " + eventInput + " " + distanceInput;  
+  } else {
+    event = eventInput + " " + distanceInput;
+  }
+ 
+  var text = document.createTextNode(event);
   graphTitle.appendChild(text);  
 
   
