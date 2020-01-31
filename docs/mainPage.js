@@ -53,7 +53,22 @@ let eventCSV = ["Men's 50 FR LCM", "Women's 50 FR LCM", "Men's 100 FR LCM",
             "Men's 200 IM LCM", "Women's 200 IM LCM", "Men's 400 IM LCM", 
             "Women's 400 IM LCM", "Men's 400 FR-R LCM", "Women's 400 FR-R LCM", 
             "Mixed 400 FR-R LCM", "Men's 800 FR-R LCM", "Women's 800 FR-R LCM", 
-            "Men's 400 MED-R LCM", "Women's 400 MED-R LCM", "Mixed 400 MED-R LCM"]  
+            "Men's 400 MED-R LCM", "Women's 400 MED-R LCM", "Mixed 400 MED-R LCM",
+            "Men's 50 FR SCY", "Women's 50 FR SCY", "Men's 100 FR SCY", 
+            "Women's 100 FR SCY", "Men's 200 FR SCY", "Women's 200 FR SCY", 
+            "Men's 400 FR SCY", "Women's 400 FR SCY", "Men's 800 FR SCY", 
+            "Women's 800 FR SCY", "Men's 1500 FR SCY", "Women's 1500 FR SCY", 
+            "Men's 50 BK SCY", "Women's 50 BK SCY", "Men's 100 BK SCY", 
+            "Women's 100 BK SCY","Men's 200 BK SCY","Women's 200 BK SCY",
+            "Men's 50 BR SCY", "Women's 50 BR SCY", "Men's 100 BR SCY", 
+            "Women's 100 BR SCY", "Men's 200 BR SCY", "Women's 200 BR SCY",
+            "Men's 50 FL SCY", "Women's 50 FL SCY", "Men's 100 FL SCY", 
+            "Women's 100 FL SCY", "Men's 200 FL SCY", "Women's 200 FL SCY", 
+            "Men's 200 IM SCY", "Women's 200 IM SCY", "Men's 400 IM SCY", 
+            "Women's 400 IM SCY", "Men's 400 FR-R SCY", "Women's 400 FR-R SCY", 
+            "Mixed 400 FR-R SCY", "Men's 800 FR-R SCY", "Women's 800 FR-R SCY", 
+            "Men's 400 MED-R SCY", "Women's 400 MED-R SCY", "Mixed 400 MED-R SCY",
+            "Men's 500 FR SCY", "Women's 500 FR SCY","Men's 1650 FR SCY", "Women's 1650 FR SCY"]  
 
 let countries = {"USA":"United States of America", "BRA":"Brazil", "FRA":"France",
   "AUS":"Australia", "RUS":"Russia", "RSA":"South Africa", "SUI":"Switzerland",
@@ -182,8 +197,10 @@ function timeToMS(timeStr) {
  * Output: 'Clean' Record
  */
 function cleanUp(record) {
+  if(!record["Event"].includes("SCY")) {
+    record['Country'] = converCountry(record['Country']); 
+  }
   
-  record['Country'] = converCountry(record['Country']); 
   record['Date'] = new Date(record['Date']);
   record['Rank'] = Number(record['Rank']); 
   record['TotalTime'] = timeToMS(record['Time']); 
@@ -241,12 +258,22 @@ function readData(data, array) {
  * 
  * 
  */
-function main(data) {
+function mainLCM(data) {
   readData(data, LCM_World_Records);  
 }
 
+function mainSCY(data) {
+  readData(data, SCY_Records);  
+}
+
+function mainSCM(data) {
+  readData(data, SCM_World_Records);  
+}
+
 //Fill LCM_World_Records
-d3.csv("AllWorldRecords.csv").then( main ); 
+d3.csv("AllWorldRecords.csv").then( mainLCM ); 
+d3.csv("NCAAD1RecordProgressions.csv").then( mainSCY ); 
+d3.csv("RecordProgressionSCM.csv").then( mainSCM ); 
 
 
 
@@ -412,14 +439,58 @@ var SVG = d3.select("#graph")
               .attr("transform",
               "translate(" + margins.left + "," + margins.top + ")");
 
+var graphTitle = document.getElementById("eventTitle"); 
+
+
 let dot = {
   fill: 'red', 
   radius: 5,
   stroke_width: 1, 
   opacity: 1
 }
+              
+            
 
 
+function plotPoints(dataArray, dot, plot, xScale, yScale) {
+  plot
+    .selectAll('circle')
+    .data(dataArray)
+    .enter()
+    .append('circle')
+    .attr('cx', d => xScale(d.Date))
+    .attr('cy', d => yScale( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo); 
+}
+
+function updatePoints(dot, plot, xScale, yScale) {
+  plot
+    .selectAll('circle')
+    .attr('cx', d => xScale(d.Date))
+    .attr('cy', d => yScale( + d.TotalTime))
+    .attr('r', dot.radius)
+    .attr('fill', dot.fill)
+    .style('stroke-width', dot.stroke_width)
+    .style('opacity', dot.opacity)
+    .on('mouseover', showInfo)
+    .on('mouseout', hideInfo); 
+}
+
+function drawLine(dataArray, line, xScale, yScale) {
+  line.datum(dataArray)
+    .attr("fill", "none")
+    .attr("stroke", "black")
+    .attr("stroke-width", 1.5)
+    .attr("d", d3.line()
+      .x(function(d) { return xScale(d.Date) })
+      .y(function(d) { return yScale(d.TotalTime) })
+      ); 
+}
 
 /*drawGraph() 
  * 
@@ -428,6 +499,10 @@ let dot = {
  * in html.  
  */
 function drawGraph(dataArray) { 
+  var text = document.createTextNode(dataArray[0]["Event"]);
+  graphTitle.appendChild(text);  
+
+  
   //Add zoom to graph
   var zoom = d3.zoom()
     .scaleExtent([0.5, 20])
@@ -475,7 +550,7 @@ function drawGraph(dataArray) {
                          .tickFormat(timeToString));
 
   
-  //Don't get clip and plot
+ 
   var clip = SVG.append("defs").append("SVG:clipPath")
     .attr("id", "clip")
     .append("SVG:rect")
@@ -483,6 +558,8 @@ function drawGraph(dataArray) {
     .attr("height", height )
     .attr("x", 0)
     .attr("y", 0);
+
+
   
   
   var line = SVG.append("path")
@@ -491,30 +568,9 @@ function drawGraph(dataArray) {
                  .attr("clip-path", "url(#clip)");
    
  
-  // Add the line
-  line.datum(dataArray)
-    .attr("fill", "none")
-    .attr("stroke", "black")
-    .attr("stroke-width", 1.5)
-    .attr("d", d3.line()
-      .x(function(d) { return dateXScale(d.Date) })
-      .y(function(d) { return timeYScale(d.TotalTime) })
-      ); 
 
-  //Plot graph
-  plot
-   .selectAll('circle')
-   .data(dataArray)
-   .enter()
-   .append('circle')
-   .attr('cx', d => dateXScale(d.Date))
-   .attr('cy', d => timeYScale( + d.TotalTime))
-   .attr('r', dot.radius)
-   .attr('fill', dot.fill)
-   .style('stroke-width', dot.stroke_width)
-   .style('opacity', dot.opacity)
-   .on('mouseover', showInfo)
-   .on('mouseout', hideInfo); 
+  drawLine(dataArray, line, dateXScale, timeYScale)
+  plotPoints(dataArray, dot, plot, dateXScale, timeYScale); 
 
   
 
@@ -534,25 +590,8 @@ function drawGraph(dataArray) {
                  .tickSize(-height)
                  .tickFormat(timeToString)); 
 
-    line
-        .attr("fill", "none")
-        .attr("stroke", "black")
-        .attr("stroke-width", 1.5)
-        .attr("d", d3.line()
-          .x(function(d) { return newX(d.Date) })
-          .y(function(d) { return newY(d.TotalTime) })
-          ); 
-    
-    // update circle position
-    plot
-        .selectAll("circle")
-        .attr('cx', d => newX(d.Date))
-        .attr('cy', d => newY( + d.TotalTime))
-        .attr('fill', dot.fill)
-        .style('stroke-width', dot.stroke_width)
-        .style('opacity', dot.opacity)
-        .on('mouseover', showInfo)
-        .on('mouseout', hideInfo);
+    drawLine(dataArray, line, newX, newY); 
+    updatePoints(dot, plot, newX, newY); 
   }
   
 
@@ -566,6 +605,11 @@ function drawGraph(dataArray) {
  * in html.  
  */
 function drawGraphBoth(dataArray, dataMale, dataFemale) { 
+  
+  var text = document.createTextNode(dataArray[0]["Event"]);
+  graphTitle.appendChild(text);  
+
+  
   //Add zoom to graph
   var zoom = d3.zoom()
     .scaleExtent([0.5, 20])
@@ -612,77 +656,37 @@ function drawGraphBoth(dataArray, dataMale, dataFemale) {
                          .tickSize(-height)
                          .tickFormat(timeToString));
 
-  
-  //Don't get clip and plot
+
   var clip = SVG.append("defs").append("SVG:clipPath")
     .attr("id", "clip")
     .append("SVG:rect")
     .attr("width", width )
     .attr("height", height )
     .attr("x", 0)
-    .attr("y", 0);
-  
-  
+    .attr("y", 0); 
+
+  maleDot = dot; 
+  dot.fill = "Blue"; 
+  //Plot Male Data
   var lineMale = SVG.append("path")
                 .attr("clip-path", "url(#clip)");
   var plotMale = SVG.append("g")
                  .attr("clip-path", "url(#clip)");
-  
+  drawLine(dataMale, lineMale, dateXScale, timeYScale)
+  plotPoints(dataMale, maleDot, plotMale, dateXScale, timeYScale); 
+ 
+  femaleDot = dot; 
+  dot.fill = 'Pink'; 
+  //Plot Female Data
   var lineFemale = SVG.append("path")
                 .attr("clip-path", "url(#clip)");
   var plotFemale = SVG.append("g")
                   .attr("clip-path", "url(#clip)");
+  drawLine(dataFemale, lineFemale, dateXScale, timeYScale)
+  plotPoints(dataFemale, dot, plotFemale, dateXScale, timeYScale); 
+
  
-  // Add the line
-  lineMale.datum(dataMale)
-    .attr("fill", "none")
-    .attr("stroke", "black")
-    .attr("stroke-width", 1.5)
-    .attr("d", d3.line()
-      .x(function(d) { return dateXScale(d.Date) })
-      .y(function(d) { return timeYScale(d.TotalTime) })
-      ); 
-
-  //Plot graph
-  plotMale
-   .selectAll('circle')
-   .data(dataMale)
-   .enter()
-   .append('circle')
-   .attr('cx', d => dateXScale(d.Date))
-   .attr('cy', d => timeYScale( + d.TotalTime))
-   .attr('r', dot.radius)
-   .attr('fill', dot.fill)
-   .style('stroke-width', dot.stroke_width)
-   .style('opacity', dot.opacity)
-   .on('mouseover', showInfo)
-   .on('mouseout', hideInfo); 
-
-  
-  // Add the line
-  lineFemale.datum(dataFemale)
-  .attr("fill", "none")
-  .attr("stroke", "black")
-  .attr("stroke-width", 1.5)
-  .attr("d", d3.line()
-    .x(function(d) { return dateXScale(d.Date) })
-    .y(function(d) { return timeYScale(d.TotalTime) })
-    ); 
-
-  //Plot graph
-  plotFemale
-    .selectAll('circle')
-    .data(dataFemale)
-    .enter()
-    .append('circle')
-    .attr('cx', d => dateXScale(d.Date))
-    .attr('cy', d => timeYScale( + d.TotalTime))
-    .attr('r', dot.radius)
-    .attr('fill', dot.fill)
-    .style('stroke-width', dot.stroke_width)
-    .style('opacity', dot.opacity)
-    .on('mouseover', showInfo)
-    .on('mouseout', hideInfo); 
+                
 
   // A function that updates the chart when the user zoom and thus new boundaries are available
   function updateChart() {
@@ -699,50 +703,13 @@ function drawGraphBoth(dataArray, dataMale, dataFemale) {
     yAxis.call(d3.axisLeft(newY)
                  .tickSize(-height)
                  .tickFormat(timeToString)); 
-    // Add the line
-    lineMale.datum(dataMale)
-      .attr("fill", "none")
-      .attr("stroke", "black")
-      .attr("stroke-width", 1.5)
-      .attr("d", d3.line()
-        .x(function(d) { return newX(d.Date) })
-        .y(function(d) { return newY(d.TotalTime) })
-        ); 
-
-    //Plot graph
-    plotMale
-    .selectAll('circle')
-    .attr('cx', d => newX(d.Date))
-    .attr('cy', d => newY( + d.TotalTime))
-    .attr('r', dot.radius)
-    .attr('fill', dot.fill)
-    .style('stroke-width', dot.stroke_width)
-    .style('opacity', dot.opacity)
-    .on('mouseover', showInfo)
-    .on('mouseout', hideInfo); 
-
     
-    // Add the line
-    lineFemale.datum(dataFemale)
-    .attr("fill", "none")
-    .attr("stroke", "black")
-    .attr("stroke-width", 1.5)
-    .attr("d", d3.line()
-      .x(function(d) { return newX(d.Date) })
-      .y(function(d) { return newY(d.TotalTime) })
-      ); 
-
-    //Plot graph
-    plotFemale
-      .selectAll('circle')
-      .attr('cx', d => newX(d.Date))
-      .attr('cy', d => newY( + d.TotalTime))
-      .attr('r', dot.radius)
-      .attr('fill', dot.fill)
-      .style('stroke-width', dot.stroke_width)
-      .style('opacity', dot.opacity)
-      .on('mouseover', showInfo)
-      .on('mouseout', hideInfo); 
+    //Update Male Chart
+    drawLine(dataMale, lineMale, newX, newY)
+    updatePoints(maleDot, plotMale, newX, newY); 
+    //Update Female Chart 
+    drawLine(dataFemale, lineFemale, newX, newY)
+    updatePoints(femaleDot, plotFemale, newX, newY); 
   }
   
 
@@ -750,7 +717,7 @@ function drawGraphBoth(dataArray, dataMale, dataFemale) {
 
 
 /*graph()
- * Connected to graph button. 
+ * Call when user clicks graph or reset button.  
  * 
  */
 function graph() {
@@ -759,6 +726,7 @@ function graph() {
   SVG.selectAll('g').remove();
   SVG.selectAll('text').remove();
   SVG.selectAll('path').remove(); 
+  graphTitle.innerHTML = ""; 
 
   getUserInput();  
   let data = [];
@@ -771,7 +739,7 @@ function graph() {
   } 
   else if(distanceInput == "LCM") {
     data = filterArray(LCM_World_Records, event); 
-  } 
+  }
 
   if(selectedGender == 'both') {
     selectedGender = 'male'; 
@@ -787,3 +755,6 @@ function graph() {
 
   
 }
+
+
+graph(); 
