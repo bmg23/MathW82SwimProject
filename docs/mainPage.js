@@ -275,13 +275,11 @@ d3.csv("AllWorldRecords.csv").then( mainLCM );
 d3.csv("NCAAD1RecordProgressions.csv").then( mainSCY ); 
 d3.csv("RecordProgressionSCM.csv").then( mainSCM ); 
 
-console.log(SCM_World_Records);
-
 
 
 /******************************Script for graphing*******************************/
 //Global user input variables 
-var selectedGender = 'Both'; 
+var selectedGender = 'none'; 
 let genderInput = document.getElementsByName('gender'); 
 var dateInput = slider.value; 
 var eventInput = ['50 Free']; 
@@ -441,7 +439,10 @@ var SVG = d3.select("#graph")
               "translate(" + margins.left + "," + margins.top + ")");
 
 var graphTitle = document.getElementById("eventTitle"); 
-
+if(selectedGender == 'none') {
+  var text = document.createTextNode("Please click graph to start!");
+  graphTitle.appendChild(text);
+}  
 
 let dot = {
   fill: 'red', 
@@ -501,18 +502,17 @@ function drawLine(dataArray, line, xScale, yScale) {
  */
 function drawGraph(dataArray) { 
   var event = "";  
-  if(dataArray.length == 0) {
-    event = "No data."
-  }
-  if (selectedGender == 'male') {
+  if (selectedGender == 'male' && dataArray.length > 0) {
     event = "Men's " + eventInput + " " + distanceInput;  
   } 
-  else if(selectedGender == 'female') {
+  else if(selectedGender == 'female' && dataArray.length > 0) {
     event = "Women's " + eventInput + " " + distanceInput;  
-  } else {
+  } 
+  else if(dataArray.length > 0) {
     event = eventInput + " " + distanceInput;
+  } else {
+    event = "No data."
   }
- 
   var text = document.createTextNode(event);
   graphTitle.appendChild(text);  
 
@@ -766,9 +766,4 @@ function graph() {
   } else {
     drawGraph(data); 
   }
-
-  
 }
-
-
-graph(); 

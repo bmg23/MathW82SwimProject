@@ -21,7 +21,7 @@
         <div class = 'columnLeft'>
             <form>
                 <p class="option" value="male">Gender</p>
-                <input type="radio" name="gender" value="male" class = "description"> Male </input>
+                <input checked type="radio" name="gender" value="male" class = "description"> Male </input>
                 <input type="radio" name="gender" value="female" class = "description"> Female </input>
                 <input type="radio" name="gender" value="both" class = "description"> Both </input>
                 <br>
@@ -42,7 +42,6 @@
                 <p class="option">Distance</p>
                 <select id="distance">
                     <option value="SCY">Short Course Yards</option>
-                    <option value="SCM">Short Course Meters</option>
                     <option value="LCM">Long Course Meters</option>
                 </select>
             </form>
@@ -58,9 +57,12 @@
             <br>
             <br>
             <a href="https://www.usaswimming.org/Home/times/data-hub">USA Swimming Data</a>
+
             
 
-            <p class="description" id="description"></p>
+            <p class="description" id="description">This website was created by, Brian Goins and Emily Gunderson. 
+                                                    It displays swimming world record data from USA Swimming Data Hub (link above). 
+                                                    Enjoy!</p>
         </div>
 
         <div class="graph" id="graph">
@@ -69,8 +71,7 @@
         <br>
         <div class="info"></div> 
         <br>
-        <br>
-        <p></p>   
+        <br>   
     </body>
 
     <script src="https://d3js.org/d3.v5.min.js"></script>
